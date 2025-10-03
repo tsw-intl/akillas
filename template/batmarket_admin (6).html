@@ -1,0 +1,1039 @@
+<script type="text/javascript">
+        var gk_isXlsx = false;
+        var gk_xlsxFileLookup = {};
+        var gk_fileData = {};
+        function filledCell(cell) {
+          return cell !== '' && cell != null;
+        }
+        function loadFileData(filename) {
+        if (gk_isXlsx && gk_xlsxFileLookup[filename]) {
+            try {
+                var workbook = XLSX.read(gk_fileData[filename], { type: 'base64' });
+                var firstSheetName = workbook.SheetNames[0];
+                var worksheet = workbook.Sheets[firstSheetName];
+
+                // Convert sheet to JSON to filter blank rows
+                var jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1, blankrows: false, defval: '' });
+                // Filter out blank rows (rows where all cells are empty, null, or undefined)
+                var filteredData = jsonData.filter(row => row.some(filledCell));
+
+                // Heuristic to find the header row by ignoring rows with fewer filled cells than the next row
+                var headerRowIndex = filteredData.findIndex((row, index) =>
+                  row.filter(filledCell).length >= filteredData[index + 1]?.filter(filledCell).length
+                );
+                // Fallback
+                if (headerRowIndex === -1 || headerRowIndex > 25) {
+                  headerRowIndex = 0;
+                }
+
+                // Convert filtered JSON back to CSV
+                var csv = XLSX.utils.aoa_to_sheet(filteredData.slice(headerRowIndex)); // Create a new sheet from filtered array of arrays
+                csv = XLSX.utils.sheet_to_csv(csv, { header: 1 });
+                return csv;
+            } catch (e) {
+                console.error(e);
+                return "";
+            }
+        }
+        return gk_fileData[filename] || "";
+        }
+        </script><!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BatMarket Admin Panel</title>
+    <style>
+        :root {
+            --primary-color: #2c3e50;
+            --secondary-color: #3498db;
+            --success-color: #27ae60;
+            --error-color: #e74c3c;
+            --warning-color: #f39c12;
+            --background-color: #f4f6f9;
+            --card-bg: #ffffff;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Arial, sans-serif;
+        }
+
+        body {
+            background: var(--background-color);
+            color: var(--primary-color);
+        }
+
+        .container {
+            display: flex;
+            min-height: 100vh;
+        }
+
+        .sidebar {
+            width: 250px;
+            background: var(--primary-color);
+            color: white;
+            padding: 20px;
+            position: fixed;
+            height: 100%;
+            overflow-y: auto;
+        }
+
+        .sidebar-header {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 15px 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .nav-item {
+            padding: 15px;
+            margin: 5px 0;
+            cursor: pointer;
+            border-radius: 5px;
+            transition: background 0.3s;
+        }
+
+        .nav-item:hover {
+            background: var(--secondary-color);
+        }
+
+        .nav-item.active {
+            background: var(--secondary-color);
+            font-weight: bold;
+        }
+
+        .main-content {
+            margin-left: 250px;
+            padding: 20px;
+            width: calc(100% - 250px);
+            overflow-y: auto;
+        }
+
+        .section-header {
+            margin-bottom: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .card {
+            background: var(--card-bg);
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+
+        .stat-card {
+            padding: 20px;
+            border-radius: 8px;
+            background: var(--card-bg);
+            text-align: center;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        }
+
+        .table-container {
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background: var(--card-bg);
+        }
+
+        th, td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #eee;
+        }
+
+        th {
+            background: var(--primary-color);
+            color: white;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .modal-content {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            width: 90%;
+            max-width: 600px;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+        }
+
+        .form-group input, .form-group select, .form-group textarea {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-right: 10px;
+        }
+
+        .btn-primary {
+            background: var(--secondary-color);
+            color: white;
+        }
+
+        .btn-danger {
+            background: var(--error-color);
+            color: white;
+        }
+
+        .btn-success {
+            background: var(--success-color);
+            color: white;
+        }
+
+        .action-buttons button {
+            margin: 0 5px;
+            padding: 5px 10px;
+            font-size: 14px;
+        }
+
+        @media (max-width: 768px) {
+            .sidebar {
+                width: 200px;
+            }
+            .main-content {
+                margin-left: 200px;
+                width: calc(100% - 200px);
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="sidebar">
+            <div class="sidebar-header">
+                <span>⚡ BatMarket Admin</span>
+            </div>
+            <div class="nav-item" onclick="showSection('overview')">📊 Vue d'ensemble</div>
+            <div class="nav-item" onclick="showSection('users')">👥 Gestion Utilisateurs</div>
+            <div class="nav-item" onclick="showSection('referrals')">🌳 Arbre Parrainages</div>
+            <div class="nav-item" onclick="showSection('bat-system')">🦇 Système BAT</div>
+            <div class="nav-item" onclick="showSection('products')">🛍️ Produits & Marketplace</div>
+            <div class="nav-item" onclick="showSection('videos')">🎬 Gestion Vidéos</div>
+            <div class="nav-item" onclick="showSection('transactions')">💰 Transactions</div>
+            <div class="nav-item" onclick="showSection('reports')">📈 Rapports</div>
+            <div class="nav-item" onclick="showSection('settings')">⚙️ Configuration</div>
+            <div class="nav-item" onclick="showSection('support')">🎧 Support</div>
+            <div class="nav-item" onclick="logout()">Déconnexion</div>
+        </div>
+
+        <div class="main-content">
+            <div id="overview" class="section">
+                <div class="section-header">
+                    <h2>Vue d'ensemble</h2>
+                </div>
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div>👥</div>
+                        <div id="totalUsers">1,245</div>
+                        <div>Utilisateurs Total</div>
+                        <small>+12% ce mois</small>
+                    </div>
+                    <div class="stat-card">
+                        <div>🆕</div>
+                        <div id="newUsers">356</div>
+                        <div>Nouveaux ce mois</div>
+                        <small>+8% vs mois dernier</small>
+                    </div>
+                    <div class="stat-card">
+                        <div>🦇</div>
+                        <div id="totalBAT">123,450</div>
+                        <div>BAT en circulation</div>
+                        <small>+2,400 aujourd'hui</small>
+                    </div>
+                    <div class="stat-card">
+                        <div>💵</div>
+                        <div id="totalRevenue">2,468,900</div>
+                        <div>XOF convertis</div>
+                        <small>+15% ce mois</small>
+                    </div>
+                    <div class="stat-card">
+                        <div>🛍️</div>
+                        <div id="totalProducts">3,890</div>
+                        <div>Produits actifs</div>
+                        <small>+89 cette semaine</small>
+                    </div>
+                    <div class="stat-card">
+                        <div>🌳</div>
+                        <div id="totalReferrals">8,756</div>
+                        <div>Parrainages total</div>
+                        <small>+156 cette semaine</small>
+                    </div>
+                </div>
+                <div class="card">
+                    <h3>Activité Récente</h3>
+                    <div class="table-container">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Type</th>
+                                    <th>Utilisateur</th>
+                                    <th>Action</th>
+                                    <th>Montant</th>
+                                    <th>Date</th>
+                                    <th>Statut</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>Inscription</td>
+                                    <td>Marie Koné</td>
+                                    <td>Nouveau compte</td>
+                                    <td>-</td>
+                                    <td>Il y a 2 min</td>
+                                    <td>Actif</td>
+                                </tr>
+                                <!-- Additional rows as per your document -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <div id="videos" class="section" style="display: none;">
+                <div class="section-header">
+                    <h2>Gestion des Vidéos</h2>
+                    <div>
+                        <button class="btn btn-primary" onclick="openModal('addVideoModal')">+ Ajouter Vidéo</button>
+                        <button class="btn btn-primary" onclick="scheduleVideos()">📅 Programmer</button>
+                        <button class="btn btn-primary" onclick="bulkVideoAction()">🔄 Actions Groupées</button>
+                        <button class="btn btn-primary" onclick="exportVideos()">📥 Exporter</button>
+                    </div>
+                </div>
+                <div class="card">
+                    <div class="form-group">
+                        <select id="platformFilter">
+                            <option value="">Toutes plateformes</option>
+                            <option value="tiktok">TikTok</option>
+                            <option value="youtube">YouTube</option>
+                            <option value="both">Les deux</option>
+                        </select>
+                        <select id="videoStatusFilter">
+                            <option value="">Tous statuts</option>
+                            <option value="draft">Brouillon</option>
+                            <option value="scheduled">Programmée</option>
+                            <option value="published">Publiée</option>
+                            <option value="failed">Échec</option>
+                        </select>
+                        <input type="text" id="videoSearch" placeholder="Rechercher vidéos...">
+                        <button class="btn btn-primary" onclick="filterVideos()">Filtrer</button>
+                    </div>
+                    <div class="table-container">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th><input type="checkbox" id="selectAllVideos"></th>
+                                    <th>Aperçu</th>
+                                    <th>Titre</th>
+                                    <th>Plateformes</th>
+                                    <th>Statut</th>
+                                    <th>Vues</th>
+                                    <th>Programmé</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td><input type="checkbox" class="video-checkbox"></td>
+                                    <td>📹</td>
+                                    <td>Tutoriel BatMarket</td>
+                                    <td>TikTok, YouTube</td>
+                                    <td>Publiée</td>
+                                    <td>12.5K / 8.7K</td>
+                                    <td>-</td>
+                                    <td class="action-buttons">
+                                        <button onclick="viewVideo(1)">👁️</button>
+                                        <button onclick="editVideo(1)">✏️</button>
+                                        <button onclick="shareVideo(1)">📤</button>
+                                    </td>
+                                </tr>
+                                <!-- Additional rows as per your document -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <div id="products" class="section" style="display: none;">
+                <div class="section-header">
+                    <h2>Produits & Marketplace</h2>
+                    <div>
+                        <button class="btn btn-primary" onclick="openModal('addProductModal')">+ Ajouter Produit</button>
+                        <button class="btn btn-primary" onclick="openModal('manageCategoriesModal')">🏷️ Gérer Catégories</button>
+                        <button class="btn btn-primary" onclick="exportToCSV([], 'products.csv')">📥 Exporter</button>
+                    </div>
+                </div>
+                <div class="card">
+                    <div class="table-container">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th><input type="checkbox" id="selectAllProducts"></th>
+                                    <th>ID</th>
+                                    <th>Produit</th>
+                                    <th>Vendeur</th>
+                                    <th>Catégorie</th>
+                                    <th>Prix</th>
+                                    <th>Stock</th>
+                                    <th>Vues</th>
+                                    <th>Statut</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td><input type="checkbox" class="product-checkbox"></td>
+                                    <td>P001</td>
+                                    <td>Smartphone Galaxy Pro</td>
+                                    <td>TechStore</td>
+                                    <td>Électronique</td>
+                                    <td>250,000 XOF</td>
+                                    <td>15</td>
+                                    <td>1,234</td>
+                                    <td>Actif</td>
+                                    <td class="action-buttons">
+                                        <button onclick="viewProduct('P001')">👁️</button>
+                                        <button onclick="editProduct('P001')">✏️</button>
+                                        <button onclick="deleteProduct('P001')">🚫</button>
+                                    </td>
+                                </tr>
+                                <!-- Additional rows as per your document -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Add Video Modal -->
+            <div id="addVideoModal" class="modal">
+                <div class="modal-content">
+                    <h2>🎬 Ajouter Nouvelle Vidéo</h2>
+                    <form id="addVideoForm">
+                        <div class="form-group">
+                            <label for="videoTitle">Titre de la vidéo</label>
+                            <input type="text" id="videoTitle" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="videoDescription">Description</label>
+                            <textarea id="videoDescription" required></textarea>
+                        </div>
+                        <div class="form-group">
+                            <label for="videoFile">Fichier vidéo</label>
+                            <input type="file" id="videoFile" accept="video/*" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="videoThumbnail">Miniature</label>
+                            <input type="file" id="videoThumbnail" accept="image/*">
+                        </div>
+                        <div class="form-group">
+                            <label>Plateformes cibles</label>
+                            <input type="checkbox" id="platformTikTok"> TikTok
+                            <input type="checkbox" id="platformYouTube"> YouTube
+                        </div>
+                        <div class="form-group">
+                            <label for="publishType">Publication</label>
+                            <select id="publishType">
+                                <option value="now">Publier maintenant</option>
+                                <option value="schedule">Programmer</option>
+                                <option value="draft">Sauvegarder en brouillon</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="scheduleDate">Date de programmation</label>
+                            <input type="datetime-local" id="scheduleDate" disabled>
+                        </div>
+                        <div class="form-group">
+                            <label for="videoHashtags">Hashtags</label>
+                            <input type="text" id="videoHashtags" placeholder="Séparez les hashtags par des espaces">
+                        </div>
+                        <div class="form-group">
+                            <button type="button" class="btn btn-danger" onclick="closeModal('addVideoModal')">Annuler</button>
+                            <button type="button" class="btn btn-success" onclick="createVideo()">Créer Vidéo</button>
+                        </div>
+                        <div id="createVideoSuccess" class="success-message" style="display: none;">Vidéo créée avec succès !</div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Add Product Modal -->
+            <div id="addProductModal" class="modal">
+                <div class="modal-content">
+                    <h2>🛍️ Ajouter Nouveau Produit</h2>
+                    <form id="addProductForm">
+                        <div class="form-group">
+                            <label for="productName">Nom du produit</label>
+                            <input type="text" id="productName" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="productCategory">Catégorie</label>
+                            <select id="productCategory" required>
+                                <option value="">Sélectionner une catégorie</option>
+                                <option value="electronics">Électronique</option>
+                                <option value="fashion">Mode</option>
+                                <option value="home">Maison & Jardin</option>
+                                <option value="services">Services</option>
+                                <option value="food">Alimentation</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="productPrice">Prix (XOF)</label>
+                            <input type="number" id="productPrice" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="productStock">Stock</label>
+                            <input type="number" id="productStock" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="productDescription">Description</label>
+                            <textarea id="productDescription"></textarea>
+                        </div>
+                        <div class="form-group">
+                            <label for="productImages">Images du produit</label>
+                            <input type="file" id="productImages" accept="image/*" multiple>
+                        </div>
+                        <div class="form-group">
+                            <button type="button" class="btn btn-danger" onclick="closeModal('addProductModal')">Annuler</button>
+                            <button type="button" class="btn btn-success" onclick="createProduct()">Créer Produit</button>
+                        </div>
+                        <div id="createProductSuccess" class="success-message" style="display: none;">Produit créé avec succès !</div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Manage Categories Modal -->
+            <div id="manageCategoriesModal" class="modal">
+                <div class="modal-content">
+                    <h2>🏷️ Gestion des Catégories</h2>
+                    <div class="form-group">
+                        <label for="newCategoryName">Nouvelle catégorie</label>
+                        <input type="text" id="newCategoryName">
+                        <button class="btn btn-primary" onclick="addCategory()">Ajouter</button>
+                    </div>
+                    <div class="table-container">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Nom</th>
+                                    <th>Produits</th>
+                                    <th>Statut</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>Électronique</td>
+                                    <td>245</td>
+                                    <td>Actif</td>
+                                    <td class="action-buttons">
+                                        <button onclick="editCategory('electronics')">✏️</button>
+                                        <button onclick="deleteCategory('electronics')">🗑️</button>
+                                    </td>
+                                </tr>
+                                <!-- Additional rows as per your document -->
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="form-group">
+                        <button class="btn btn-danger" onclick="closeModal('manageCategoriesModal')">Fermer</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Video Management Functions
+        function viewVideo(videoId) {
+            alert(`Voir détails vidéo ID: ${videoId}`);
+        }
+
+        function editVideo(videoId) {
+            alert(`Modifier vidéo ID: ${videoId}`);
+        }
+
+        function shareVideo(videoId) {
+            if (confirm('Partager cette vidéo sur les réseaux sociaux ?')) {
+                showSuccess('Vidéo partagée avec succès !');
+            }
+        }
+
+        function cancelSchedule(videoId) {
+            if (confirm('Annuler la programmation de cette vidéo ?')) {
+                showSuccess('Programmation annulée !');
+            }
+        }
+
+        function publishVideo(videoId) {
+            if (confirm('Publier cette vidéo maintenant ?')) {
+                showSuccess('Vidéo publiée avec succès !');
+            }
+        }
+
+        function scheduleVideos() {
+            const selected = document.querySelectorAll('.video-checkbox:checked');
+            if (selected.length === 0) {
+                alert('Veuillez sélectionner au moins une vidéo');
+                return;
+            }
+            const time = prompt('Programmer pour quand ? (format: YYYY-MM-DD HH:MM)');
+            if (time) {
+                showSuccess(`${selected.length} vidéo(s) programmée(s) pour ${time} !`);
+            }
+        }
+
+        function bulkVideoAction() {
+            const selected = document.querySelectorAll('.video-checkbox:checked');
+            if (selected.length === 0) {
+                alert('Veuillez sélectionner au moins une vidéo');
+                return;
+            }
+            const action = prompt('Action (publish/schedule/delete):');
+            if (action) {
+                showSuccess(`Action "${action}" appliquée à ${selected.length} vidéo(s) !`);
+            }
+        }
+
+        function exportVideos() {
+            showSuccess('Export des vidéos en cours...');
+        }
+
+        function createVideo() {
+            const title = document.getElementById('videoTitle').value.trim();
+            const description = document.getElementById('videoDescription').value.trim();
+            const videoFile = document.getElementById('videoFile').files[0];
+
+            if (!title || !description || !videoFile) {
+                alert('Veuillez remplir tous les champs obligatoires');
+                return;
+            }
+
+            setTimeout(() => {
+                showSuccess('createVideoSuccess', 'Vidéo créée avec succès !');
+                
+                // Clear form
+                document.getElementById('videoTitle').value = '';
+                document.getElementById('videoDescription').value = '';
+                document.getElementById('videoFile').value = '';
+                document.getElementById('videoThumbnail').value = '';
+                document.getElementById('videoHashtags').value = '';
+                
+                setTimeout(() => {
+                    closeModal('addVideoModal');
+                }, 2000);
+            }, 1000);
+        }
+
+        // Product Management Functions
+        function createProduct() {
+            const name = document.getElementById('productName').value.trim();
+            const category = document.getElementById('productCategory').value;
+            const price = document.getElementById('productPrice').value;
+            const stock = document.getElementById('productStock').value;
+
+            if (!name || !category || !price || !stock) {
+                alert('Veuillez remplir tous les champs obligatoires');
+                return;
+            }
+
+            setTimeout(() => {
+                showSuccess('createProductSuccess', 'Produit créé avec succès !');
+                
+                // Clear form
+                document.getElementById('productName').value = '';
+                document.getElementById('productCategory').value = '';
+                document.getElementById('productPrice').value = '';
+                document.getElementById('productStock').value = '';
+                document.getElementById('productDescription').value = '';
+                document.getElementById('productImages').value = '';
+                
+                setTimeout(() => {
+                    closeModal('addProductModal');
+                }, 2000);
+            }, 1000);
+        }
+
+        // Category Management
+        function addCategory() {
+            const categoryName = document.getElementById('newCategoryName').value.trim();
+            if (!categoryName) {
+                alert('Veuillez entrer un nom de catégorie');
+                return;
+            }
+            
+            showSuccess(`Catégorie "${categoryName}" ajoutée avec succès !`);
+            document.getElementById('newCategoryName').value = '';
+        }
+
+        // Dynamic form handling for video scheduling
+        document.addEventListener('DOMContentLoaded', function() {
+            const publishType = document.getElementById('publishType');
+            const scheduleDate = document.getElementById('scheduleDate');
+            
+            if (publishType && scheduleDate) {
+                publishType.addEventListener('change', function() {
+                    if (this.value === 'schedule') {
+                        scheduleDate.disabled = false;
+                        scheduleDate.required = true;
+                    } else {
+                        scheduleDate.disabled = true;
+                        scheduleDate.required = false;
+                        scheduleDate.value = '';
+                    }
+                });
+            }
+            
+            // Start real-time updates
+            simulateRealTimeUpdates();
+
+            // Close modals when clicking outside
+            window.addEventListener('click', function(event) {
+                const modals = document.querySelectorAll('.modal');
+                modals.forEach(modal => {
+                    if (event.target === modal) {
+                        modal.style.display = 'none';
+                    }
+                });
+            });
+
+            // Add smooth scrolling for navigation
+            const navItems = document.querySelectorAll('.nav-item');
+            navItems.forEach(item => {
+                item.addEventListener('click', function() {
+                    document.querySelector('.main-content').scrollTop = 0;
+                    navItems.forEach(nav => nav.classList.remove('active'));
+                    this.classList.add('active');
+                });
+            });
+
+            console.log('⚡ BatMarket Admin Panel loaded successfully!');
+        });
+
+        // Enhanced filter functions for videos
+        function filterVideos() {
+            const search = document.getElementById('videoSearch').value.toLowerCase();
+            const platformFilter = document.getElementById('platformFilter').value;
+            const statusFilter = document.getElementById('videoStatusFilter').value;
+            
+            showSuccess('Filtres vidéos appliqués');
+        }
+
+        // Bulk selection for videos and products
+        document.addEventListener('DOMContentLoaded', function() {
+            const selectAllVideos = document.getElementById('selectAllVideos');
+            if (selectAllVideos) {
+                selectAllVideos.addEventListener('change', function() {
+                    const checkboxes = document.querySelectorAll('.video-checkbox');
+                    checkboxes.forEach(cb => cb.checked = this.checked);
+                });
+            }
+
+            const selectAllProducts = document.getElementById('selectAllProducts');
+            if (selectAllProducts) {
+                selectAllProducts.addEventListener('change', function() {
+                    const checkboxes = document.querySelectorAll('.product-checkbox');
+                    checkboxes.forEach(cb => cb.checked = this.checked);
+                });
+            }
+        });
+
+        // Section navigation
+        function showSection(sectionId) {
+            const sections = document.querySelectorAll('.section');
+            sections.forEach(section => {
+                section.style.display = section.id === sectionId ? 'block' : 'none';
+            });
+            document.querySelector('.section-header h2').textContent = getSectionTitle(sectionId);
+        }
+
+        function getSectionTitle(section) {
+            const titles = {
+                'overview': 'Vue d\'ensemble',
+                'users': 'Gestion Utilisateurs',
+                'referrals': 'Arbre Parrainages',
+                'bat-system': 'Système BAT',
+                'products': 'Produits & Marketplace',
+                'videos': 'Gestion Vidéos',
+                'transactions': 'Transactions',
+                'reports': 'Rapports',
+                'settings': 'Configuration',
+                'support': 'Support'
+            };
+            return titles[section] || 'Administration';
+        }
+
+        // Form validation helper
+        function validateForm(formData) {
+            for (let field in formData) {
+                if (!formData[field] || formData[field].toString().trim() === '') {
+                    return false;
+                }
+            }
+            return true;
+        }
+
+        // File upload preview function
+        function previewFile(input, previewElement) {
+            if (input.files && input.files[0]) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    previewElement.src = e.target.result;
+                    previewElement.style.display = 'block';
+                };
+                reader.readAsDataURL(input.files[0]);
+            }
+        }
+
+        // Enhanced modal management
+        function openModal(modalId) {
+            const modal = document.getElementById(modalId);
+            modal.style.display = 'block';
+            
+            const form = modal.querySelector('form');
+            if (form) {
+                form.reset();
+            }
+        }
+
+        function closeModal(modalId) {
+            const modal = document.getElementById(modalId);
+            modal.style.display = 'none';
+            
+            const successMessages = modal.querySelectorAll('.success-message');
+            const errorMessages = modal.querySelectorAll('.error-message');
+            
+            successMessages.forEach(msg => msg.style.display = 'none');
+            errorMessages.forEach(msg => msg.style.display = 'none');
+        }
+
+        // Enhanced search functionality
+        function performSearch(searchTerm, targetTable) {
+            const rows = document.querySelectorAll(`${targetTable} tbody tr`);
+            let visibleRows = 0;
+            
+            rows.forEach(row => {
+                const text = row.textContent.toLowerCase();
+                if (text.includes(searchTerm.toLowerCase())) {
+                    row.style.display = '';
+                    visibleRows++;
+                } else {
+                    row.style.display = 'none';
+                }
+            });
+            
+            return visibleRows;
+        }
+
+        // Export functionality
+        function exportToCSV(data, filename) {
+            const csvContent = data.map(row => row.join(',')).join('\n');
+            const blob = new Blob([csvContent], { type: 'text/csv' });
+            const url = window.URL.createObjectURL(blob);
+            
+            const a = document.createElement('a');
+            a.setAttribute('hidden', '');
+            a.setAttribute('href', url);
+            a.setAttribute('download', filename);
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            
+            showSuccess(`Export ${filename} terminé !`);
+        }
+
+        // Notification system
+        function showSuccess(messageId, message) {
+            if (messageId) {
+                const element = document.getElementById(messageId);
+                if (element) {
+                    element.style.display = 'block';
+                    element.textContent = message;
+                    setTimeout(() => {
+                        element.style.display = 'none';
+                    }, 3000);
+                }
+            } else {
+                showNotification(message, 'success');
+            }
+        }
+
+        function showNotification(message, type = 'info', duration = 3000) {
+            const notification = document.createElement('div');
+            notification.className = `notification notification-${type}`;
+            notification.textContent = message;
+            
+            notification.style.cssText = `
+                position: fixed;
+                top: 100px;
+                right: 20px;
+                padding: 1rem 1.5rem;
+                border-radius: 10px;
+                color: white;
+                font-weight: 500;
+                z-index: 2000;
+                transform: translateX(100%);
+                transition: transform 0.3s ease;
+                max-width: 300px;
+                word-wrap: break-word;
+            `;
+            
+            const colors = {
+                'success': 'linear-gradient(45deg, #27ae60, #2ecc71)',
+                'error': 'linear-gradient(45deg, #e74c3c, #c0392b)',
+                'warning': 'linear-gradient(45deg, #f39c12, #e67e22)',
+                'info': 'linear-gradient(45deg, #3498db, #2980b9)'
+            };
+            
+            notification.style.background = colors[type] || colors.info;
+            
+            document.body.appendChild(notification);
+            
+            setTimeout(() => {
+                notification.style.transform = 'translateX(0)';
+            }, 100);
+            
+            setTimeout(() => {
+                notification.style.transform = 'translateX(100%)';
+                setTimeout(() => {
+                    document.body.removeChild(notification);
+                }, 300);
+            }, duration);
+        }
+
+        // Advanced analytics simulation
+        function generateReport(reportType) {
+            const reports = {
+                'monthly': 'Rapport mensuel généré avec données des 30 derniers jours',
+                'growth': 'Analyse de croissance: +25% utilisateurs, +18% revenus',
+                'bat': 'Rapport BAT: 45,890 distribués, 32,100 convertis',
+                'security': 'Rapport sécurité: 0 incident, 3 tentatives bloquées'
+            };
+            
+            setTimeout(() => {
+                showNotification(reports[reportType] || 'Rapport généré', 'success');
+            }, 1500);
+        }
+
+        // Real-time dashboard updates
+        function updateDashboardStats() {
+            const stats = [
+                { id: 'totalUsers', min: 1, max: 5 },
+                { id: 'newUsers', min: 0, max: 3 },
+                { id: 'totalBAT', min: 10, max: 200 },
+                { id: 'totalRevenue', min: 1000, max: 50000 },
+                { id: 'totalProducts', min: 1, max: 10 },
+                { id: 'totalReferrals', min: 1, max: 8 }
+            ];
+            
+            stats.forEach(stat => {
+                if (Math.random() > 0.8) {
+                    const element = document.getElementById(stat.id);
+                    if (element) {
+                        const increment = Math.floor(Math.random() * (stat.max - stat.min + 1)) + stat.min;
+                        const currentValue = parseInt(element.textContent.replace(/[,\.]/g, ''));
+                        const newValue = currentValue + increment;
+                        element.textContent = newValue.toLocaleString();
+                    }
+                }
+            });
+        }
+
+        // Enhanced real-time updates
+        function simulateRealTimeUpdates() {
+            setInterval(() => {
+                updateDashboardStats();
+            }, 10000);
+            
+            setInterval(() => {
+                if (Math.random() > 0.95) {
+                    const messages = [
+                        'Nouvel utilisateur inscrit',
+                        'Conversion BAT effectuée',
+                        'Nouvelle vidéo publiée',
+                        'Produit ajouté au marketplace'
+                    ];
+                    const randomMessage = messages[Math.floor(Math.random() * messages.length)];
+                    showNotification(randomMessage, 'info', 2000);
+                }
+            }, 15000);
+        }
+
+        // Placeholder functions for product management
+        function viewProduct(productId) {
+            alert(`Voir détails produit ID: ${productId}`);
+        }
+
+        function editProduct(productId) {
+            alert(`Modifier produit ID: ${productId}`);
+        }
+
+        function deleteProduct(productId) {
+            if (confirm(`Supprimer le produit ID: ${productId} ?`)) {
+                showSuccess(`Produit ${productId} supprimé avec succès !`);
+            }
+        }
+
+        function editCategory(categoryId) {
+            alert(`Modifier catégorie: ${categoryId}`);
+        }
+
+        function deleteCategory(categoryId) {
+            if (confirm(`Supprimer la catégorie: ${categoryId} ?`)) {
+                showSuccess(`Catégorie ${categoryId} supprimée avec succès !`);
+            }
+        }
+
+        function logout() {
+            if (confirm('Voulez-vous vous déconnecter ?')) {
+                showSuccess('Déconnexion réussie !');
+                // Implement actual logout logic here
+            }
+        }
+
+        // Show overview by default
+        showSection('overview');
+    </script>
+</body>
+</html>

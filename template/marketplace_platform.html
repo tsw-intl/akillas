@@ -1,0 +1,753 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BatMarket - Marketplace avec Parrainage</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        /* Header */
+        .header {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            padding: 1rem 2rem;
+            border-radius: 15px;
+            margin-bottom: 2rem;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+        }
+
+        .header-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            font-size: 2rem;
+            font-weight: bold;
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .nav-tabs {
+            display: flex;
+            gap: 1rem;
+        }
+
+        .tab-btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 25px;
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            color: white;
+            cursor: pointer;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .tab-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        .tab-btn.active {
+            background: linear-gradient(45deg, #764ba2, #667eea);
+        }
+
+        /* Main Content */
+        .main-content {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 2rem;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            min-height: 80vh;
+        }
+
+        .section {
+            display: none;
+            animation: fadeIn 0.5s ease-in;
+        }
+
+        .section.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Dashboard Cards */
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .stat-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 2rem;
+            border-radius: 15px;
+            text-align: center;
+            transform: translateY(0);
+            transition: all 0.3s ease;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.2);
+        }
+
+        .stat-number {
+            font-size: 2.5rem;
+            font-weight: bold;
+            margin-bottom: 0.5rem;
+        }
+
+        .stat-label {
+            font-size: 1rem;
+            opacity: 0.9;
+        }
+
+        /* Genealogy Tree */
+        .tree-container {
+            background: #f8f9ff;
+            border-radius: 15px;
+            padding: 2rem;
+            margin: 2rem 0;
+            overflow: auto;
+        }
+
+        .tree {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-width: 800px;
+        }
+
+        .tree-node {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 1rem;
+            border-radius: 10px;
+            margin: 0.5rem;
+            min-width: 200px;
+            text-align: center;
+            position: relative;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .tree-level {
+            display: flex;
+            justify-content: center;
+            gap: 2rem;
+            margin: 1rem 0;
+        }
+
+        .tree-connector {
+            width: 2px;
+            height: 30px;
+            background: #667eea;
+            margin: 0 auto;
+        }
+
+        /* Forms */
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .form-label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+            color: #333;
+        }
+
+        .form-input, .form-select {
+            width: 100%;
+            padding: 12px 16px;
+            border: 2px solid #e1e8ed;
+            border-radius: 10px;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+        }
+
+        .form-input:focus, .form-select:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 10px;
+            font-size: 1rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .btn-primary {
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        /* Tables */
+        .table-container {
+            overflow-x: auto;
+            border-radius: 15px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .table {
+            width: 100%;
+            border-collapse: collapse;
+            background: white;
+        }
+
+        .table th {
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            color: white;
+            padding: 1rem;
+            text-align: left;
+            font-weight: 500;
+        }
+
+        .table td {
+            padding: 1rem;
+            border-bottom: 1px solid #e1e8ed;
+        }
+
+        .table tr:hover {
+            background: #f8f9ff;
+        }
+
+        /* Product Cards */
+        .product-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 1.5rem;
+            margin: 2rem 0;
+        }
+
+        .product-card {
+            background: white;
+            border-radius: 15px;
+            overflow: hidden;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s ease;
+        }
+
+        .product-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.15);
+        }
+
+        .product-image {
+            width: 100%;
+            height: 200px;
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 3rem;
+        }
+
+        .product-info {
+            padding: 1.5rem;
+        }
+
+        .product-title {
+            font-size: 1.2rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            color: #333;
+        }
+
+        .product-price {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #667eea;
+            margin-bottom: 1rem;
+        }
+
+        /* BAT Balance */
+        .bat-balance {
+            background: linear-gradient(135deg, #ffd700 0%, #ffed4e 100%);
+            color: #333;
+            padding: 1rem;
+            border-radius: 10px;
+            display: inline-block;
+            font-weight: bold;
+            margin-bottom: 1rem;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .header-content {
+                flex-direction: column;
+                gap: 1rem;
+            }
+
+            .nav-tabs {
+                flex-wrap: wrap;
+                justify-content: center;
+            }
+
+            .dashboard-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .tree {
+                min-width: auto;
+            }
+
+            .tree-level {
+                flex-direction: column;
+                align-items: center;
+            }
+        }
+
+        /* Hero Section */
+        .hero {
+            text-align: center;
+            padding: 4rem 2rem;
+            background: linear-gradient(135deg, rgba(102, 126, 234, 0.1) 0%, rgba(118, 75, 162, 0.1) 100%);
+            border-radius: 20px;
+            margin-bottom: 3rem;
+        }
+
+        .hero h1 {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .hero p {
+            font-size: 1.2rem;
+            color: #666;
+            margin-bottom: 2rem;
+        }
+
+        /* Referral Code */
+        .referral-section {
+            background: #f8f9ff;
+            padding: 2rem;
+            border-radius: 15px;
+            margin: 2rem 0;
+        }
+
+        .referral-code {
+            background: white;
+            padding: 1rem;
+            border-radius: 10px;
+            border: 2px dashed #667eea;
+            text-align: center;
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #667eea;
+            margin: 1rem 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <div class="header">
+            <div class="header-content">
+                <div class="logo">🦇 BatMarket</div>
+                <nav class="nav-tabs">
+                    <button class="tab-btn active" onclick="showSection('public')">Accueil</button>
+                    <button class="tab-btn" onclick="showSection('user')">Espace Utilisateur</button>
+                    <button class="tab-btn" onclick="showSection('admin')">Administration</button>
+                </nav>
+            </div>
+        </div>
+
+        <!-- Main Content -->
+        <div class="main-content">
+            
+            <!-- PUBLIC VIEW -->
+            <div id="public" class="section active">
+                <div class="hero">
+                    <h1>Bienvenue sur BatMarket</h1>
+                    <p>La marketplace qui récompense vos parrainages avec des pièces BAT convertibles en XOF</p>
+                    <button class="btn btn-primary" onclick="showSection('user')">Rejoindre maintenant</button>
+                </div>
+
+                <div class="dashboard-grid">
+                    <div class="stat-card">
+                        <div class="stat-number">1,245</div>
+                        <div class="stat-label">Utilisateurs Actifs</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number">3,890</div>
+                        <div class="stat-label">Produits Disponibles</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number">567</div>
+                        <div class="stat-label">Vendeurs</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number">89,450</div>
+                        <div class="stat-label">BAT Distribués</div>
+                    </div>
+                </div>
+
+                <h2 style="margin-bottom: 1rem;">Produits Populaires</h2>
+                <div class="product-grid">
+                    <div class="product-card">
+                        <div class="product-image">📱</div>
+                        <div class="product-info">
+                            <div class="product-title">Smartphone Galaxy</div>
+                            <div class="product-price">250,000 XOF</div>
+                            <button class="btn btn-primary">Voir Détails</button>
+                        </div>
+                    </div>
+                    <div class="product-card">
+                        <div class="product-image">👕</div>
+                        <div class="product-info">
+                            <div class="product-title">T-shirt Designer</div>
+                            <div class="product-price">15,000 XOF</div>
+                            <button class="btn btn-primary">Voir Détails</button>
+                        </div>
+                    </div>
+                    <div class="product-card">
+                        <div class="product-image">💻</div>
+                        <div class="product-info">
+                            <div class="product-title">Ordinateur Portable</div>
+                            <div class="product-price">450,000 XOF</div>
+                            <button class="btn btn-primary">Voir Détails</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- USER SPACE -->
+            <div id="user" class="section">
+                <h1>Espace Utilisateur</h1>
+                
+                <div class="dashboard-grid">
+                    <div class="stat-card">
+                        <div class="bat-balance">
+                            🦇 2,450 BAT
+                            <div style="font-size: 0.9rem; margin-top: 0.5rem;">≈ 49,000 XOF</div>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number">12</div>
+                        <div class="stat-label">Parrainages Réussis</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number">5</div>
+                        <div class="stat-label">Produits Vendus</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number">8</div>
+                        <div class="stat-label">Commandes</div>
+                    </div>
+                </div>
+
+                <div class="referral-section">
+                    <h3>Votre Code de Parrainage</h3>
+                    <div class="referral-code">BAT-USER-2024-XY7Z</div>
+                    <p style="text-align: center; color: #666;">
+                        Partagez ce code pour gagner 200 BAT par nouveau client !
+                    </p>
+                </div>
+
+                <h3>Votre Arbre de Parrainage</h3>
+                <div class="tree-container">
+                    <div class="tree">
+                        <div class="tree-level">
+                            <div class="tree-node">
+                                <strong>Vous</strong><br>
+                                John Doe<br>
+                                <small>12 filleuls</small>
+                            </div>
+                        </div>
+                        <div class="tree-connector"></div>
+                        <div class="tree-level">
+                            <div class="tree-node">
+                                Marie K.<br>
+                                <small>3 filleuls</small>
+                            </div>
+                            <div class="tree-node">
+                                Paul M.<br>
+                                <small>2 filleuls</small>
+                            </div>
+                            <div class="tree-node">
+                                Sophie L.<br>
+                                <small>1 filleul</small>
+                            </div>
+                        </div>
+                        <div class="tree-connector"></div>
+                        <div class="tree-level">
+                            <div class="tree-node">
+                                Ahmed B.<br>
+                                <small>Niveau 2</small>
+                            </div>
+                            <div class="tree-node">
+                                Lisa T.<br>
+                                <small>Niveau 2</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <h3>Convertir BAT en XOF</h3>
+                <div class="form-group">
+                    <label class="form-label">Montant BAT à convertir</label>
+                    <input type="number" class="form-input" placeholder="Entrez le montant BAT" id="batAmount">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Montant XOF équivalent</label>
+                    <input type="text" class="form-input" readonly placeholder="0 XOF" id="xofAmount">
+                </div>
+                <button class="btn btn-primary" onclick="convertBAT()">Convertir en XOF</button>
+            </div>
+
+            <!-- ADMIN PANEL -->
+            <div id="admin" class="section">
+                <h1>Panneau d'Administration</h1>
+                
+                <div class="dashboard-grid">
+                    <div class="stat-card">
+                        <div class="stat-number">1,245</div>
+                        <div class="stat-label">Utilisateurs Total</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number">356</div>
+                        <div class="stat-label">Nouveaux ce mois</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number">123,450</div>
+                        <div class="stat-label">BAT en circulation</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number">2,468,900</div>
+                        <div class="stat-label">XOF convertis</div>
+                    </div>
+                </div>
+
+                <h3>Arbre Généalogique Global des Parrainages</h3>
+                <div class="tree-container">
+                    <div class="tree">
+                        <div class="tree-level">
+                            <div class="tree-node">
+                                <strong>Top Parrain</strong><br>
+                                Alexandre D.<br>
+                                <small>45 filleuls directs</small>
+                            </div>
+                        </div>
+                        <div class="tree-connector"></div>
+                        <div class="tree-level">
+                            <div class="tree-node">
+                                Marie K.<br>
+                                <small>15 filleuls</small>
+                            </div>
+                            <div class="tree-node">
+                                Paul M.<br>
+                                <small>12 filleuls</small>
+                            </div>
+                            <div class="tree-node">
+                                Sophie L.<br>
+                                <small>8 filleuls</small>
+                            </div>
+                            <div class="tree-node">
+                                John D.<br>
+                                <small>10 filleuls</small>
+                            </div>
+                        </div>
+                        <div class="tree-connector"></div>
+                        <div class="tree-level">
+                            <div class="tree-node">
+                                Ahmed B.<br>
+                                <small>5 filleuls</small>
+                            </div>
+                            <div class="tree-node">
+                                Lisa T.<br>
+                                <small>3 filleuls</small>
+                            </div>
+                            <div class="tree-node">
+                                Marc R.<br>
+                                <small>7 filleuls</small>
+                            </div>
+                            <div class="tree-node">
+                                Emma S.<br>
+                                <small>4 filleuls</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <h3>Gestion des Utilisateurs</h3>
+                <div class="table-container">
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Nom</th>
+                                <th>Email</th>
+                                <th>BAT</th>
+                                <th>Parrainages</th>
+                                <th>Statut</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>001</td>
+                                <td>Alexandre Dupont</td>
+                                <td>alex@email.com</td>
+                                <td>5,240 BAT</td>
+                                <td>45</td>
+                                <td>Actif</td>
+                                <td>
+                                    <button class="btn btn-primary" style="padding: 5px 10px; font-size: 0.8rem;">Voir</button>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>002</td>
+                                <td>Marie Koné</td>
+                                <td>marie@email.com</td>
+                                <td>3,120 BAT</td>
+                                <td>15</td>
+                                <td>Actif</td>
+                                <td>
+                                    <button class="btn btn-primary" style="padding: 5px 10px; font-size: 0.8rem;">Voir</button>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>003</td>
+                                <td>Paul Martin</td>
+                                <td>paul@email.com</td>
+                                <td>2,890 BAT</td>
+                                <td>12</td>
+                                <td>Actif</td>
+                                <td>
+                                    <button class="btn btn-primary" style="padding: 5px 10px; font-size: 0.8rem;">Voir</button>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <h3 style="margin-top: 2rem;">Configuration BAT/XOF</h3>
+                <div class="form-group">
+                    <label class="form-label">Taux de conversion (1 BAT = ? XOF)</label>
+                    <input type="number" class="form-input" value="20" id="conversionRate">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Récompense par parrainage (en BAT)</label>
+                    <input type="number" class="form-input" value="200" id="referralReward">
+                </div>
+                <button class="btn btn-primary">Mettre à jour la configuration</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let currentSection = 'public';
+        let conversionRate = 20; // 1 BAT = 20 XOF
+
+        function showSection(sectionName) {
+            // Hide all sections
+            const sections = document.querySelectorAll('.section');
+            sections.forEach(section => {
+                section.classList.remove('active');
+            });
+
+            // Remove active class from all tabs
+            const tabs = document.querySelectorAll('.tab-btn');
+            tabs.forEach(tab => {
+                tab.classList.remove('active');
+            });
+
+            // Show selected section
+            document.getElementById(sectionName).classList.add('active');
+            
+            // Add active class to clicked tab
+            event.target.classList.add('active');
+            
+            currentSection = sectionName;
+        }
+
+        function convertBAT() {
+            const batInput = document.getElementById('batAmount');
+            const xofInput = document.getElementById('xofAmount');
+            
+            const batAmount = parseFloat(batInput.value) || 0;
+            const xofAmount = batAmount * conversionRate;
+            
+            xofInput.value = xofAmount.toLocaleString() + ' XOF';
+        }
+
+        // Update XOF amount when BAT amount changes
+        document.addEventListener('DOMContentLoaded', function() {
+            const batInput = document.getElementById('batAmount');
+            if (batInput) {
+                batInput.addEventListener('input', convertBAT);
+            }
+        });
+
+        // Add some interactive elements
+        document.addEventListener('DOMContentLoaded', function() {
+            // Add hover effects to cards
+            const cards = document.querySelectorAll('.stat-card, .product-card');
+            cards.forEach(card => {
+                card.addEventListener('mouseenter', function() {
+                    this.style.transform = 'translateY(-5px)';
+                });
+                card.addEventListener('mouseleave', function() {
+                    this.style.transform = 'translateY(0)';
+                });
+            });
+
+            // Simulate real-time updates
+            setInterval(() => {
+                const statNumbers = document.querySelectorAll('.stat-number');
+                statNumbers.forEach(stat => {
+                    if (Math.random() > 0.95) { // 5% chance to update
+                        const currentValue = parseInt(stat.textContent.replace(/,/g, ''));
+                        const newValue = currentValue + Math.floor(Math.random() * 10);
+                        stat.textContent = newValue.toLocaleString();
+                    }
+                });
+            }, 5000);
+        });
+    </script>
+</body>
+</html>

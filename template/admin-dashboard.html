@@ -1,0 +1,1282 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard - BatMarket</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: #f8fafc;
+            color: #334155;
+        }
+
+        /* Sidebar */
+        .sidebar {
+            position: fixed;
+            left: 0;
+            top: 0;
+            width: 280px;
+            height: 100vh;
+            background: linear-gradient(135deg, #1e293b 0%, #334155 100%);
+            color: white;
+            z-index: 1000;
+            overflow-y: auto;
+        }
+
+        .sidebar-header {
+            padding: 2rem;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .logo {
+            font-size: 1.5rem;
+            font-weight: 800;
+            color: #f59e0b;
+        }
+
+        .sidebar-nav {
+            padding: 1rem 0;
+        }
+
+        .nav-item {
+            display: block;
+            padding: 1rem 2rem;
+            color: rgba(255, 255, 255, 0.7);
+            text-decoration: none;
+            transition: all 0.3s ease;
+            border-left: 3px solid transparent;
+        }
+
+        .nav-item:hover,
+        .nav-item.active {
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+            border-left-color: #f59e0b;
+        }
+
+        .nav-icon {
+            margin-right: 0.75rem;
+            font-size: 1.2rem;
+        }
+
+        /* Main content */
+        .main-content {
+            margin-left: 280px;
+            min-height: 100vh;
+        }
+
+        .topbar {
+            background: white;
+            padding: 1rem 2rem;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .page-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #1e293b;
+        }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .user-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+        }
+
+        .content {
+            padding: 2rem;
+        }
+
+        /* Cards */
+        .card {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.06);
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .card-header {
+            display: flex;
+            justify-content: between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+        }
+
+        .card-title {
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: #1e293b;
+        }
+
+        /* Stats Grid */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 2rem;
+            margin-bottom: 2rem;
+        }
+
+        .stat-card {
+            background: white;
+            border-radius: 12px;
+            padding: 2rem;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.06);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .stat-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 4px;
+        }
+
+        .stat-card.users::before { background: #3b82f6; }
+        .stat-card.vendors::before { background: #10b981; }
+        .stat-card.bat::before { background: #f59e0b; }
+        .stat-card.revenue::before { background: #ef4444; }
+
+        .stat-value {
+            font-size: 2.5rem;
+            font-weight: 800;
+            margin-bottom: 0.5rem;
+        }
+
+        .stat-card.users .stat-value { color: #3b82f6; }
+        .stat-card.vendors .stat-value { color: #10b981; }
+        .stat-card.bat .stat-value { color: #f59e0b; }
+        .stat-card.revenue .stat-value { color: #ef4444; }
+
+        .stat-label {
+            color: #64748b;
+            font-weight: 500;
+        }
+
+        .stat-change {
+            margin-top: 0.5rem;
+            font-size: 0.875rem;
+        }
+
+        .positive { color: #10b981; }
+        .negative { color: #ef4444; }
+
+        /* Tables */
+        .table-container {
+            overflow-x: auto;
+            border-radius: 12px;
+            border: 1px solid #e2e8f0;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background: white;
+        }
+
+        th {
+            background: #f8fafc;
+            padding: 1rem;
+            text-align: left;
+            font-weight: 600;
+            color: #475569;
+            border-bottom: 1px solid #e2e8f0;
+        }
+
+        td {
+            padding: 1rem;
+            border-bottom: 1px solid #e2e8f0;
+        }
+
+        tr:hover {
+            background: #f8fafc;
+        }
+
+        /* Buttons */
+        .btn {
+            padding: 0.5rem 1rem;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 500;
+            text-decoration: none;
+            display: inline-block;
+            transition: all 0.2s;
+            font-size: 0.875rem;
+        }
+
+        .btn-primary {
+            background: #3b82f6;
+            color: white;
+        }
+
+        .btn-success {
+            background: #10b981;
+            color: white;
+        }
+
+        .btn-warning {
+            background: #f59e0b;
+            color: white;
+        }
+
+        .btn-danger {
+            background: #ef4444;
+            color: white;
+        }
+
+        .btn-secondary {
+            background: #64748b;
+            color: white;
+        }
+
+        .btn:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        }
+
+        /* Form elements */
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .form-label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+            color: #374151;
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 0.75rem;
+            border: 1px solid #d1d5db;
+            border-radius: 8px;
+            transition: border-color 0.2s;
+        }
+
+        .form-control:focus {
+            outline: none;
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+        }
+
+        /* Status badges */
+        .badge {
+            padding: 0.25rem 0.75rem;
+            border-radius: 50px;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+
+        .badge-success {
+            background: #dcfce7;
+            color: #166534;
+        }
+
+        .badge-warning {
+            background: #fef3c7;
+            color: #92400e;
+        }
+
+        .badge-danger {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+
+        /* Charts placeholder */
+        .chart-container {
+            height: 300px;
+            background: #f8fafc;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #64748b;
+            font-weight: 500;
+        }
+
+        /* Grid layouts */
+        .grid-2 {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2rem;
+        }
+
+        .grid-3 {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 1rem;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .sidebar {
+                transform: translateX(-100%);
+            }
+
+            .main-content {
+                margin-left: 0;
+            }
+
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .grid-2 {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* Page sections */
+        .section {
+            display: none;
+        }
+
+        .section.active {
+            display: block;
+        }
+
+        /* Modal */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 2000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: white;
+            border-radius: 12px;
+            padding: 2rem;
+            max-width: 500px;
+            width: 90%;
+        }
+    </style>
+</head>
+<body>
+    <!-- Sidebar -->
+    <div class="sidebar">
+        <div class="sidebar-header">
+            <div class="logo">🦇 BatMarket Admin</div>
+        </div>
+        <nav class="sidebar-nav">
+            <a href="#dashboard" class="nav-item active" data-section="dashboard">
+                <span class="nav-icon">📊</span>Dashboard
+            </a>
+            <a href="#users" class="nav-item" data-section="users">
+                <span class="nav-icon">👥</span>Utilisateurs
+            </a>
+            <a href="#vendors" class="nav-item" data-section="vendors">
+                <span class="nav-icon">🏪</span>Vendeurs
+            </a>
+            <a href="#products" class="nav-item" data-section="products">
+                <span class="nav-icon">📦</span>Produits
+            </a>
+            <a href="#referrals" class="nav-item" data-section="referrals">
+                <span class="nav-icon">🎯</span>Parrainages
+            </a>
+            <a href="#bat-system" class="nav-item" data-section="bat-system">
+                <span class="nav-icon">🦇</span>Système BAT
+            </a>
+            <a href="#conversions" class="nav-item" data-section="conversions">
+                <span class="nav-icon">💰</span>Conversions
+            </a>
+            <a href="#analytics" class="nav-item" data-section="analytics">
+                <span class="nav-icon">📈</span>Analytics
+            </a>
+            <a href="#settings" class="nav-item" data-section="settings">
+                <span class="nav-icon">⚙️</span>Paramètres
+            </a>
+        </nav>
+    </div>
+
+    <!-- Main Content -->
+    <div class="main-content">
+        <!-- Topbar -->
+        <div class="topbar">
+            <h1 class="page-title" id="page-title">Dashboard</h1>
+            <div class="user-info">
+                <span>Admin</span>
+                <div class="user-avatar">A</div>
+            </div>
+        </div>
+
+        <!-- Content -->
+        <div class="content">
+            <!-- Dashboard Section -->
+            <div id="dashboard" class="section active">
+                <div class="stats-grid">
+                    <div class="stat-card users">
+                        <div class="stat-value">15,432</div>
+                        <div class="stat-label">Utilisateurs Total</div>
+                        <div class="stat-change positive">+12% ce mois</div>
+                    </div>
+                    <div class="stat-card vendors">
+                        <div class="stat-value">2,847</div>
+                        <div class="stat-label">Vendeurs Actifs</div>
+                        <div class="stat-change positive">+8% ce mois</div>
+                    </div>
+                    <div class="stat-card bat">
+                        <div class="stat-value">892,340</div>
+                        <div class="stat-label">BAT en Circulation</div>
+                        <div class="stat-change positive">+15% ce mois</div>
+                    </div>
+                    <div class="stat-card revenue">
+                        <div class="stat-value">17,846,800</div>
+                        <div class="stat-label">XOF Échangés</div>
+                        <div class="stat-change positive">+23% ce mois</div>
+                    </div>
+                </div>
+
+                <div class="grid-2">
+                    <div class="card">
+                        <div class="card-header">
+                            <h3 class="card-title">Évolution des Utilisateurs</h3>
+                        </div>
+                        <div class="chart-container">
+                            📈 Graphique des utilisateurs
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <div class="card-header">
+                            <h3 class="card-title">Top Parraineurs</h3>
+                        </div>
+                        <div class="table-container">
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>Utilisateur</th>
+                                        <th>Parrainages</th>
+                                        <th>BAT Gagnées</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td>Jean Kouame</td>
+                                        <td>25</td>
+                                        <td>2,500</td>
+                                    </tr>
+                                    <tr>
+                                        <td>Marie Traore</td>
+                                        <td>18</td>
+                                        <td>1,800</td>
+                                    </tr>
+                                    <tr>
+                                        <td>Paul Diallo</td>
+                                        <td>15</td>
+                                        <td>1,500</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">Activités Récentes</h3>
+                    </div>
+                    <div class="table-container">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Utilisateur</th>
+                                    <th>Action</th>
+                                    <th>Détails</th>
+                                    <th>Date</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>Jean Kouame</td>
+                                    <td>Nouveau parrainage</td>
+                                    <td>+100 BAT (vendeur)</td>
+                                    <td>Il y a 2h</td>
+                                </tr>
+                                <tr>
+                                    <td>Marie Traore</td>
+                                    <td>Conversion BAT</td>
+                                    <td>500 BAT → 10,000 XOF</td>
+                                    <td>Il y a 4h</td>
+                                </tr>
+                                <tr>
+                                    <td>Paul Diallo</td>
+                                    <td>Nouveau produit</td>
+                                    <td>Smartphone ajouté</td>
+                                    <td>Il y a 6h</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Users Section -->
+            <div id="users" class="section">
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">Gestion des Utilisateurs</h3>
+                        <button class="btn btn-primary">Ajouter Utilisateur</button>
+                    </div>
+                    <div class="table-container">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Nom</th>
+                                    <th>Email</th>
+                                    <th>Type</th>
+                                    <th>BAT</th>
+                                    <th>Inscription</th>
+                                    <th>Statut</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>#001</td>
+                                    <td>Jean Kouame</td>
+                                    <td>jean@example.com</td>
+                                    <td>Vendeur</td>
+                                    <td>1,247</td>
+                                    <td>15/01/2024</td>
+                                    <td><span class="badge badge-success">Actif</span></td>
+                                    <td>
+                                        <button class="btn btn-secondary">Modifier</button>
+                                        <button class="btn btn-danger">Suspendre</button>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>#002</td>
+                                    <td>Marie Traore</td>
+                                    <td>marie@example.com</td>
+                                    <td>Client</td>
+                                    <td>456</td>
+                                    <td>20/01/2024</td>
+                                    <td><span class="badge badge-success">Actif</span></td>
+                                    <td>
+                                        <button class="btn btn-secondary">Modifier</button>
+                                        <button class="btn btn-danger">Suspendre</button>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>#003</td>
+                                    <td>Paul Diallo</td>
+                                    <td>paul@example.com</td>
+                                    <td>Vendeur</td>
+                                    <td>890</td>
+                                    <td>25/01/2024</td>
+                                    <td><span class="badge badge-warning">Suspendu</span></td>
+                                    <td>
+                                        <button class="btn btn-secondary">Modifier</button>
+                                        <button class="btn btn-success">Activer</button>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- BAT System Section -->
+            <div id="bat-system" class="section">
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">Configuration du Système BAT</h3>
+                    </div>
+                    <div class="grid-2">
+                        <div>
+                            <div class="form-group">
+                                <label class="form-label">Taux de Conversion (1 BAT = ? XOF)</label>
+                                <input type="number" class="form-control" value="20" id="bat-rate">
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Récompense Nouveau Client (BAT)</label>
+                                <input type="number" class="form-control" value="50" id="client-reward">
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Récompense Nouveau Vendeur (BAT)</label>
+                                <input type="number" class="form-control" value="100" id="vendor-reward">
+                            </div>
+                        </div>
+                        <div>
+                            <div class="form-group">
+                                <label class="form-label">Minimum de Conversion (BAT)</label>
+                                <input type="number" class="form-control" value="100" id="min-conversion">
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Frais de Conversion (%)</label>
+                                <input type="number" class="form-control" value="2" id="conversion-fee">
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">BAT de Bienvenue</label>
+                                <input type="number" class="form-control" value="10" id="welcome-bat">
+                            </div>
+                        </div>
+                    </div>
+                    <button class="btn btn-primary">Sauvegarder les Paramètres</button>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">Distribution des BAT</h3>
+                    </div>
+                    <div class="grid-3">
+                        <div>
+                            <h4>Total en Circulation</h4>
+                            <div style="font-size: 2rem; font-weight: bold; color: #f59e0b;">892,340 BAT</div>
+                        </div>
+                        <div>
+                            <h4>BAT Converties</h4>
+                            <div style="font-size: 2rem; font-weight: bold; color: #10b981;">123,450 BAT</div>
+                        </div>
+                        <div>
+                            <h4>BAT Disponibles</h4>
+                            <div style="font-size: 2rem; font-weight: bold; color: #3b82f6;">768,890 BAT</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Conversions Section -->
+            <div id="conversions" class="section">
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">Demandes de Conversion BAT → XOF</h3>
+                    </div>
+                    <div class="table-container">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Utilisateur</th>
+                                    <th>Montant BAT</th>
+                                    <th>Équivalent XOF</th>
+                                    <th>Frais</th>
+                                    <th>Date</th>
+                                    <th>Statut</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>#C001</td>
+                                    <td>Jean Kouame</td>
+                                    <td>500</td>
+                                    <td>10,000 XOF</td>
+                                    <td>200 XOF</td>
+                                    <td>26/03/2024</td>
+                                    <td><span class="badge badge-warning">En attente</span></td>
+                                    <td>
+                                        <button class="btn btn-success">Approuver</button>
+                                        <button class="btn btn-danger">Rejeter</button>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>#C002</td>
+                                    <td>Marie Traore</td>
+                                    <td>300</td>
+                                    <td>6,000 XOF</td>
+                                    <td>120 XOF</td>
+                                    <td>25/03/2024</td>
+                                    <td><span class="badge badge-success">Approuvée</span></td>
+                                    <td>
+                                        <button class="btn btn-secondary">Détails</button>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>#C003</td>
+                                    <td>Paul Diallo</td>
+                                    <td>750</td>
+                                    <td>15,000 XOF</td>
+                                    <td>300 XOF</td>
+                                    <td>24/03/2024</td>
+                                    <td><span class="badge badge-danger">Rejetée</span></td>
+                                    <td>
+                                        <button class="btn btn-secondary">Détails</button>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Referrals Section -->
+            <div id="referrals" class="section">
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">Système de Parrainage</h3>
+                    </div>
+                    <div class="stats-grid">
+                        <div class="stat-card">
+                            <div class="stat-value" style="color: #3b82f6;">3,542</div>
+                            <div class="stat-label">Total Parrainages</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-value" style="color: #10b981;">1,847</div>
+                            <div class="stat-label">Nouveaux Clients</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-value" style="color: #f59e0b;">1,695</div>
+                            <div class="stat-label">Nouveaux Vendeurs</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-value" style="color: #ef4444;">262,150</div>
+                            <div class="stat-label">BAT Distribuées</div>
+                        </div>
+                    </div>
+
+                    <div class="table-container">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Parrain</th>
+                                    <th>Filleul</th>
+                                    <th>Type</th>
+                                    <th>BAT Gagnées</th>
+                                    <th>Date</th>
+                                    <th>Statut</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>Jean Kouame</td>
+                                    <td>Aminata Kone</td>
+                                    <td>Vendeur</td>
+                                    <td>100</td>
+                                    <td>26/03/2024</td>
+                                    <td><span class="badge badge-success">Validé</span></td>
+                                </tr>
+                                <tr>
+                                    <td>Marie Traore</td>
+                                    <td>Ibrahim Kone</td>
+                                    <td>Client</td>
+                                    <td>50</td>
+                                    <td>25/03/2024</td>
+                                    <td><span class="badge badge-success">Validé</span></td>
+                                </tr>
+                                <tr>
+                                    <td>Paul Diallo</td>
+                                    <td>Fatima Ouedraogo</td>
+                                    <td>Vendeur</td>
+                                    <td>100</td>
+                                    <td>24/03/2024</td>
+                                    <td><span class="badge badge-warning">En attente</span></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Analytics Section -->
+            <div id="analytics" class="section">
+                <div class="grid-2">
+                    <div class="card">
+                        <div class="card-header">
+                            <h3 class="card-title">Revenus Mensuels</h3>
+                        </div>
+                        <div class="chart-container">
+                            📊 Graphique des revenus
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <div class="card-header">
+                            <h3 class="card-title">Répartition des Utilisateurs</h3>
+                        </div>
+                        <div class="chart-container">
+                            🥧 Graphique circulaire
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">Métriques Détaillées</h3>
+                    </div>
+                    <div class="grid-3">
+                        <div style="text-align: center; padding: 1rem;">
+                            <div style="font-size: 2rem; font-weight: bold; color: #3b82f6;">89.5%</div>
+                            <div>Taux de Rétention</div>
+                        </div>
+                        <div style="text-align: center; padding: 1rem;">
+                            <div style="font-size: 2rem; font-weight: bold; color: #10b981;">47.2%</div>
+                            <div>Taux de Conversion</div>
+                        </div>
+                        <div style="text-align: center; padding: 1rem;">
+                            <div style="font-size: 2rem; font-weight: bold; color: #f59e0b;">23.8%</div>
+                            <div>Taux de Parrainage</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Products Section -->
+            <div id="products" class="section">
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">Gestion des Produits</h3>
+                        <div>
+                            <button class="btn btn-primary">Ajouter Produit</button>
+                            <button class="btn btn-secondary">Exporter</button>
+                        </div>
+                    </div>
+                    <div class="table-container">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Nom</th>
+                                    <th>Vendeur</th>
+                                    <th>Prix (XOF)</th>
+                                    <th>Catégorie</th>
+                                    <th>Stock</th>
+                                    <th>Statut</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>#P001</td>
+                                    <td>iPhone 15 Pro</td>
+                                    <td>Jean Kouame</td>
+                                    <td>450,000</td>
+                                    <td>Électronique</td>
+                                    <td>5</td>
+                                    <td><span class="badge badge-success">Actif</span></td>
+                                    <td>
+                                        <button class="btn btn-secondary">Modifier</button>
+                                        <button class="btn btn-danger">Suspendre</button>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>#P002</td>
+                                    <td>MacBook Air M3</td>
+                                    <td>Marie Traore</td>
+                                    <td>650,000</td>
+                                    <td>Informatique</td>
+                                    <td>2</td>
+                                    <td><span class="badge badge-success">Actif</span></td>
+                                    <td>
+                                        <button class="btn btn-secondary">Modifier</button>
+                                        <button class="btn btn-danger">Suspendre</button>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>#P003</td>
+                                    <td>Veste en Cuir</td>
+                                    <td>Paul Diallo</td>
+                                    <td>85,000</td>
+                                    <td>Mode</td>
+                                    <td>0</td>
+                                    <td><span class="badge badge-danger">Rupture</span></td>
+                                    <td>
+                                        <button class="btn btn-secondary">Modifier</button>
+                                        <button class="btn btn-warning">Réapprovisionner</button>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">Statistiques Produits</h3>
+                    </div>
+                    <div class="stats-grid">
+                        <div class="stat-card">
+                            <div class="stat-value" style="color: #3b82f6;">8,542</div>
+                            <div class="stat-label">Total Produits</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-value" style="color: #10b981;">7,235</div>
+                            <div class="stat-label">Produits Actifs</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-value" style="color: #f59e0b;">847</div>
+                            <div class="stat-label">En Attente</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-value" style="color: #ef4444;">460</div>
+                            <div class="stat-label">Suspendus</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Vendors Section -->
+            <div id="vendors" class="section">
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">Gestion des Vendeurs</h3>
+                        <button class="btn btn-primary">Nouveau Vendeur</button>
+                    </div>
+                    <div class="table-container">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Nom</th>
+                                    <th>Email</th>
+                                    <th>Produits</th>
+                                    <th>Ventes</th>
+                                    <th>Commission</th>
+                                    <th>BAT</th>
+                                    <th>Statut</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>#V001</td>
+                                    <td>Jean Kouame</td>
+                                    <td>jean@example.com</td>
+                                    <td>23</td>
+                                    <td>145,000 XOF</td>
+                                    <td>14,500 XOF</td>
+                                    <td>1,247</td>
+                                    <td><span class="badge badge-success">Vérifié</span></td>
+                                    <td>
+                                        <button class="btn btn-secondary">Profil</button>
+                                        <button class="btn btn-primary">Commissions</button>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>#V002</td>
+                                    <td>Marie Traore</td>
+                                    <td>marie@example.com</td>
+                                    <td>18</td>
+                                    <td>89,500 XOF</td>
+                                    <td>8,950 XOF</td>
+                                    <td>456</td>
+                                    <td><span class="badge badge-success">Vérifié</span></td>
+                                    <td>
+                                        <button class="btn btn-secondary">Profil</button>
+                                        <button class="btn btn-primary">Commissions</button>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>#V003</td>
+                                    <td>Paul Diallo</td>
+                                    <td>paul@example.com</td>
+                                    <td>31</td>
+                                    <td>234,700 XOF</td>
+                                    <td>23,470 XOF</td>
+                                    <td>890</td>
+                                    <td><span class="badge badge-warning">En attente</span></td>
+                                    <td>
+                                        <button class="btn btn-success">Vérifier</button>
+                                        <button class="btn btn-danger">Rejeter</button>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Settings Section -->
+            <div id="settings" class="section">
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">Paramètres Généraux</h3>
+                    </div>
+                    <div class="grid-2">
+                        <div>
+                            <div class="form-group">
+                                <label class="form-label">Nom de la Plateforme</label>
+                                <input type="text" class="form-control" value="BatMarket">
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Commission Plateforme (%)</label>
+                                <input type="number" class="form-control" value="10">
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">TVA (%)</label>
+                                <input type="number" class="form-control" value="18">
+                            </div>
+                        </div>
+                        <div>
+                            <div class="form-group">
+                                <label class="form-label">Email Support</label>
+                                <input type="email" class="form-control" value="support@batmarket.com">
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Téléphone Support</label>
+                                <input type="tel" class="form-control" value="+225 XX XX XX XX">
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Devise Principale</label>
+                                <select class="form-control">
+                                    <option value="XOF" selected>XOF (Franc CFA)</option>
+                                    <option value="EUR">EUR (Euro)</option>
+                                    <option value="USD">USD (Dollar)</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                    <button class="btn btn-primary">Sauvegarder</button>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">Notifications</h3>
+                    </div>
+                    <div class="form-group">
+                        <label>
+                            <input type="checkbox" checked> Notifications par email pour nouvelles inscriptions
+                        </label>
+                    </div>
+                    <div class="form-group">
+                        <label>
+                            <input type="checkbox" checked> Notifications pour demandes de conversion
+                        </label>
+                    </div>
+                    <div class="form-group">
+                        <label>
+                            <input type="checkbox"> Notifications pour nouveaux produits
+                        </label>
+                    </div>
+                    <div class="form-group">
+                        <label>
+                            <input type="checkbox" checked> Rapports hebdomadaires
+                        </label>
+                    </div>
+                    <button class="btn btn-primary">Sauvegarder Préférences</button>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">Sécurité</h3>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Mot de passe actuel</label>
+                        <input type="password" class="form-control">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Nouveau mot de passe</label>
+                        <input type="password" class="form-control">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Confirmer le mot de passe</label>
+                        <input type="password" class="form-control">
+                    </div>
+                    <button class="btn btn-warning">Changer le mot de passe</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal pour les actions -->
+    <div id="modal" class="modal">
+        <div class="modal-content">
+            <h3 id="modal-title">Action</h3>
+            <p id="modal-message">Êtes-vous sûr de vouloir effectuer cette action ?</p>
+            <div style="margin-top: 1.5rem; text-align: right;">
+                <button class="btn btn-secondary" onclick="closeModal()">Annuler</button>
+                <button class="btn btn-primary" id="modal-confirm">Confirmer</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Navigation entre sections
+        document.querySelectorAll('.nav-item').forEach(item => {
+            item.addEventListener('click', (e) => {
+                e.preventDefault();
+                
+                // Retirer la classe active de tous les items
+                document.querySelectorAll('.nav-item').forEach(nav => nav.classList.remove('active'));
+                document.querySelectorAll('.section').forEach(section => section.classList.remove('active'));
+                
+                // Ajouter la classe active à l'item cliqué
+                item.classList.add('active');
+                
+                // Afficher la section correspondante
+                const sectionId = item.getAttribute('data-section');
+                document.getElementById(sectionId).classList.add('active');
+                
+                // Mettre à jour le titre de la page
+                const titles = {
+                    'dashboard': 'Dashboard',
+                    'users': 'Gestion des Utilisateurs',
+                    'vendors': 'Gestion des Vendeurs',
+                    'products': 'Gestion des Produits',
+                    'referrals': 'Système de Parrainage',
+                    'bat-system': 'Système BAT',
+                    'conversions': 'Conversions BAT → XOF',
+                    'analytics': 'Analytics & Rapports',
+                    'settings': 'Paramètres'
+                };
+                document.getElementById('page-title').textContent = titles[sectionId];
+            });
+        });
+
+        // Fonctions utilitaires
+        function showNotification(message, type = 'success') {
+            const notification = document.createElement('div');
+            notification.style.cssText = `
+                position: fixed;
+                top: 20px;
+                right: 20px;
+                background: ${type === 'success' ? '#10b981' : '#ef4444'};
+                color: white;
+                padding: 1rem 2rem;
+                border-radius: 8px;
+                z-index: 10000;
+                animation: slideIn 0.3s ease;
+                box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+            `;
+            notification.textContent = message;
+            document.body.appendChild(notification);
+            
+            setTimeout(() => {
+                notification.remove();
+            }, 4000);
+        }
+
+        function openModal(title, message, confirmCallback) {
+            document.getElementById('modal-title').textContent = title;
+            document.getElementById('modal-message').textContent = message;
+            document.getElementById('modal').classList.add('active');
+            
+            document.getElementById('modal-confirm').onclick = () => {
+                confirmCallback();
+                closeModal();
+            };
+        }
+
+        function closeModal() {
+            document.getElementById('modal').classList.remove('active');
+        }
+
+        // Gestion des actions
+        document.addEventListener('click', (e) => {
+            const target = e.target;
+            
+            // Approuver conversion
+            if (target.textContent === 'Approuver') {
+                openModal('Approuver la conversion', 'Êtes-vous sûr de vouloir approuver cette conversion ?', () => {
+                    target.textContent = 'Approuvé';
+                    target.className = 'btn btn-secondary';
+                    target.disabled = true;
+                    showNotification('Conversion approuvée avec succès !');
+                });
+            }
+            
+            // Rejeter conversion
+            if (target.textContent === 'Rejeter') {
+                openModal('Rejeter la conversion', 'Êtes-vous sûr de vouloir rejeter cette conversion ?', () => {
+                    const row = target.closest('tr');
+                    const statusCell = row.querySelector('.badge');
+                    statusCell.textContent = 'Rejetée';
+                    statusCell.className = 'badge badge-danger';
+                    target.style.display = 'none';
+                    showNotification('Conversion rejetée', 'error');
+                });
+            }
+            
+            // Sauvegarder paramètres BAT
+            if (target.textContent === 'Sauvegarder les Paramètres') {
+                showNotification('Paramètres BAT sauvegardés !');
+            }
+            
+            // Suspendre utilisateur
+            if (target.textContent === 'Suspendre') {
+                openModal('Suspendre l\'utilisateur', 'Êtes-vous sûr de vouloir suspendre cet utilisateur ?', () => {
+                    const row = target.closest('tr');
+                    const statusCell = row.querySelector('.badge');
+                    statusCell.textContent = 'Suspendu';
+                    statusCell.className = 'badge badge-warning';
+                    target.textContent = 'Activer';
+                    target.className = 'btn btn-success';
+                    showNotification('Utilisateur suspendu');
+                });
+            }
+            
+            // Activer utilisateur
+            if (target.textContent === 'Activer') {
+                openModal('Activer l\'utilisateur', 'Êtes-vous sûr de vouloir activer cet utilisateur ?', () => {
+                    const row = target.closest('tr');
+                    const statusCell = row.querySelector('.badge');
+                    statusCell.textContent = 'Actif';
+                    statusCell.className = 'badge badge-success';
+                    target.textContent = 'Suspendre';
+                    target.className = 'btn btn-danger';
+                    showNotification('Utilisateur activé !');
+                });
+            }
+        });
+
+        // Animation des compteurs
+        function animateCounters() {
+            document.querySelectorAll('.stat-value').forEach(counter => {
+                const target = parseInt(counter.textContent.replace(/,/g, ''));
+                const startValue = 0;
+                const increment = target / 100;
+                let currentValue = startValue;
+                
+                const timer = setInterval(() => {
+                    currentValue += increment;
+                    if (currentValue >= target) {
+                        counter.textContent = target.toLocaleString();
+                        clearInterval(timer);
+                    } else {
+                        counter.textContent = Math.floor(currentValue).toLocaleString();
+                    }
+                }, 20);
+            });
+        }
+
+        // Lancer l'animation des compteurs au chargement
+        setTimeout(animateCounters, 500);
+
+        // Fermer modal en cliquant à l'extérieur
+        document.getElementById('modal').addEventListener('click', (e) => {
+            if (e.target.id === 'modal') {
+                closeModal();
+            }
+        });
+    </script>
+</body>
+</html>

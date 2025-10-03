@@ -1,0 +1,3423 @@
+        // Video Management Functions
+        function viewVideo(videoId) {
+            alert(`Voir détails vidéo ID: ${videoId}`);
+        }
+
+        function editVideo(videoId) {
+            alert(`Modifier vidéo ID: ${videoId}`);
+        }
+
+        function shareVideo(videoId) {
+            if (confirm('Partager cette vidéo sur les réseaux sociaux ?')) {
+                showSuccess('Vidéo partagée avec succès !');
+            }
+        }
+
+        function cancelSchedule(videoId) {
+            if (confirm('Annuler la programmation de cette vidéo ?')) {
+                showSuccess('Programmation annulée !');
+            }
+        }
+
+        function publishVideo(videoId) {
+            if (confirm('Publier cette vidéo maintenant ?')) {
+                showSuccess('Vidéo publiée avec succès !');
+            }
+        }
+
+        function scheduleVideos() {
+            const selected = document.querySelectorAll('.video-checkbox:checked');
+            if (selected.length === 0) {
+                alert('Veuillez sélectionner au moins une vidéo');
+                return;
+            }
+            const time = prompt('Programmer pour quand ? (format: YYYY-MM-DD HH:MM)');
+            if (time) {
+                showSuccess(`${selected.length} vidéo(s) programmée(s) pour ${time} !`);
+            }
+        }
+
+        function bulkVideoAction() {
+            const selected = document.querySelectorAll('.video-checkbox:checked');
+            if (selected.length === 0) {
+                alert('Veuillez sélectionner au moins une vidéo');
+                return;
+            }
+            const action = prompt('Action (publish/schedule/delete):');
+            if (action) {
+                showSuccess(`Action "${action}" appliquée à ${selected.length} vidéo(s) !`);
+            }
+        }
+
+        function exportVideos() {
+            showSuccess('Export des vidéos en cours...');
+        }
+
+        function createVideo() {
+            const title = document.getElementById('videoTitle').value.trim();
+            const description = document.getElementById('videoDescription').value.trim();
+            const videoFile = document.getElementById('videoFile').files[0];
+
+            if (!title || !description || !videoFile) {
+                alert('Veuillez remplir tous les champs obligatoires');
+                return;
+            }
+
+            setTimeout(() => {
+                showSuccess('createVideoSuccess', 'Vidéo créée avec succès !');
+                
+                // Clear form
+                document.getElementById('videoTitle').value = '';
+                document.getElementById('videoDescription').value = '';
+                document.getElementById('videoFile').value = '';
+                document.getElementById('videoThumbnail').value = '';
+                document.getElementById('videoHashtags').value = '';
+                
+                setTimeout(() => {
+                    closeModal('addVideoModal');
+                }, 2000);
+            }, 1000);
+        }
+
+        // Product Management Functions
+        function createProduct() {
+            const name = document.getElementById('productName').value.trim();
+            const category = document.getElementById('productCategory').value;
+            const price = document.getElementById('productPrice').value;
+            const stock = document.getElementById('productStock').value;
+
+            if (!name || !category || !price || !stock) {
+                alert('Veuillez remplir tous les champs obligatoires');
+                return;
+            }
+
+            setTimeout(() => {
+                showSuccess('createProductSuccess', 'Produit créé avec succès !');
+                
+                // Clear form
+                document.getElementById('productName').value = '';
+                document.getElementById('productCategory').value = '';
+                document.getElementById('productPrice').value = '';
+                document.getElementById('productStock').value = '';
+                document.getElementById('productDescription').value = '';
+                document.getElementById('productImages').value = '';
+                
+                setTimeout(() => {
+                    closeModal('addProductModal');
+                }, 2000);
+            }, 1000);
+        }
+
+        // Category Management
+        function addCategory() {
+            const categoryName = document.getElementById('newCategoryName').value.trim();
+            if (!categoryName) {
+                alert('Veuillez entrer un nom de catégorie');
+                return;
+            }
+            
+            showSuccess(`Catégorie "${categoryName}" ajoutée avec succès !`);
+            document.getElementById('newCategoryName').value = '';
+        }
+
+        // Dynamic form handling for video scheduling
+        document.addEventListener('DOMContentLoaded', function() {
+            const publishType = document.getElementById('publishType');
+            const scheduleDate = document.getElementById('scheduleDate');
+            
+            if (publishType && scheduleDate) {
+                publishType.addEventListener('change', function() {
+                    if (this.value === 'schedule') {
+                        scheduleDate.disabled = false;
+                        scheduleDate.required = true;
+                    } else {
+                        scheduleDate.disabled = true;
+                        scheduleDate.required = false;
+                        scheduleDate.value = '';
+                    }
+                });
+            }
+            
+            // Start real-time updates
+            simulateRealTimeUpdates();
+
+            // Close modals when clicking outside
+            window.addEventListener('click', function(event) {
+                const modals = document.querySelectorAll('.modal');
+                modals.forEach(modal => {
+                    if (event.target === modal) {
+                        modal.style.display = 'none';
+                    }
+                });
+            });
+
+            // Add smooth scrolling for navigation
+            const navItems = document.querySelectorAll('.nav-item');
+            navItems.forEach(item => {
+                item.addEventListener('click', function() {
+                    // Smooth scroll to top of main content
+                    document.querySelector('.main-content').scrollTop = 0;
+                });
+            });
+
+            console.log('⚡ BatMarket Admin Panel loaded successfully!');
+        });
+
+        // Enhanced filter functions for videos
+        function filterVideos() {
+            const search = document.getElementById('videoSearch').value.toLowerCase();
+            const platformFilter = document.getElementById('platformFilter').value;
+            const statusFilter = document.getElementById('videoStatusFilter').value;
+            
+            // Simulate filtering - in real app would filter actual table rows
+            showSuccess('Filtres vidéos appliqués');
+        }
+
+        // Bulk selection for videos
+        document.addEventListener('DOMContentLoaded', function() {
+            const selectAllVideos = document.getElementById('selectAllVideos');
+            if (selectAllVideos) {
+                selectAllVideos.addEventListener('change', function() {
+                    const checkboxes = document.querySelectorAll('.video-checkbox');
+                    checkboxes.forEach(cb => cb.checked = this.checked);
+                });
+            }
+
+            const selectAllProducts = document.getElementById('selectAllProducts');
+            if (selectAllProducts) {
+                selectAllProducts.addEventListener('change', function() {
+                    const checkboxes = document.querySelectorAll('.product-checkbox');
+                    checkboxes.forEach(cb => cb.checked = this.checked);
+                });
+            }
+        });
+
+        // Update getSectionTitle function to include videos
+        function getSectionTitle(section) {
+            const titles = {
+                'overview': 'Vue d\'ensemble',
+                'users': 'Gestion Utilisateurs',
+                'referrals': 'Arbre Parrainages',
+                'bat-system': 'Système BAT',
+                'products': 'Produits & Marketplace',
+                'videos': 'Gestion Vidéos',
+                'transactions': 'Transactions',
+                'reports': 'Rapports',
+                'settings': 'Configuration',
+                'support': 'Support'
+            };
+            return titles[section] || 'Administration';
+        }
+
+        // Form validation helper
+        function validateForm(formData) {
+            for (let field in formData) {
+                if (!formData[field] || formData[field].toString().trim() === '') {
+                    return false;
+                }
+            }
+            return true;
+        }
+
+        // File upload preview function
+        function previewFile(input, previewElement) {
+            if (input.files && input.files[0]) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    previewElement.src = e.target.result;
+                    previewElement.style.display = 'block';
+                };
+                reader.readAsDataURL(input.files[0]);
+            }
+        }
+
+        // Enhanced modal management with form reset
+        function openModal(modalId) {
+            const modal = document.getElementById(modalId);
+            modal.style.display = 'block';
+            
+            // Reset form if it exists
+            const form = modal.querySelector('form');
+            if (form) {
+                form.reset();
+            }
+        }
+
+        function closeModal(modalId) {
+            const modal = document.getElementById(modalId);
+            modal.style.display = 'none';
+            
+            // Clear any success/error messages
+            const successMessages = modal.querySelectorAll('.success-message');
+            const errorMessages = modal.querySelectorAll('.error-message');
+            
+            successMessages.forEach(msg => msg.style.display = 'none');
+            errorMessages.forEach(msg => msg.style.display = 'none');
+        }
+
+        // Enhanced search functionality
+        function performSearch(searchTerm, targetTable) {
+            const rows = document.querySelectorAll(`${targetTable} tbody tr`);
+            let visibleRows = 0;
+            
+            rows.forEach(row => {
+                const text = row.textContent.toLowerCase();
+                if (text.includes(searchTerm.toLowerCase())) {
+                    row.style.display = '';
+                    visibleRows++;
+                } else {
+                    row.style.display = 'none';
+                }
+            });
+            
+            return visibleRows;
+        }
+
+        // Export functionality
+        function exportToCSV(data, filename) {
+            const csvContent = data.map(row => row.join(',')).join('\n');
+            const blob = new Blob([csvContent], { type: 'text/csv' });
+            const url = window.URL.createObjectURL(blob);
+            
+            const a = document.createElement('a');
+            a.setAttribute('hidden', '');
+            a.setAttribute('href', url);
+            a.setAttribute('download', filename);
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            
+            showSuccess(`Export ${filename} terminé !`);
+        }
+
+        // Notification system
+        function showNotification(message, type = 'info', duration = 3000) {
+            const notification = document.createElement('div');
+            notification.className = `notification notification-${type}`;
+            notification.textContent = message;
+            
+            // Style the notification
+            notification.style.cssText = `
+                position: fixed;
+                top: 100px;
+                right: 20px;
+                padding: 1rem 1.5rem;
+                border-radius: 10px;
+                color: white;
+                font-weight: 500;
+                z-index: 2000;
+                transform: translateX(100%);
+                transition: transform 0.3s ease;
+                max-width: 300px;
+                word-wrap: break-word;
+            `;
+            
+            // Set background based on type
+            const colors = {
+                'success': 'linear-gradient(45deg, #27ae60, #2ecc71)',
+                'error': 'linear-gradient(45deg, #e74c3c, #c0392b)',
+                'warning': 'linear-gradient(45deg, #f39c12, #e67e22)',
+                'info': 'linear-gradient(45deg, #3498db, #2980b9)'
+            };
+            
+            notification.style.background = colors[type] || colors.info;
+            
+            document.body.appendChild(notification);
+            
+            // Slide in
+            setTimeout(() => {
+                notification.style.transform = 'translateX(0)';
+            }, 100);
+            
+            // Slide out and remove
+            setTimeout(() => {
+                notification.style.transform = 'translateX(100%)';
+                setTimeout(() => {
+                    document.body.removeChild(notification);
+                }, 300);
+            }, duration);
+        }
+
+        // Advanced analytics simulation
+        function generateReport(reportType) {
+            const reports = {
+                'monthly': 'Rapport mensuel généré avec données des 30 derniers jours',
+                'growth': 'Analyse de croissance: +25% utilisateurs, +18% revenus',
+                'bat': 'Rapport BAT: 45,890 distribués, 32,100 convertis',
+                'security': 'Rapport sécurité: 0 incident, 3 tentatives bloquées'
+            };
+            
+            setTimeout(() => {
+                showNotification(reports[reportType] || 'Rapport généré', 'success');
+            }, 1500);
+        }
+
+        // Real-time dashboard updates
+        function updateDashboardStats() {
+            const stats = [
+                { id: 'totalUsers', min: 1, max: 5 },
+                { id: 'newUsers', min: 0, max: 3 },
+                { id: 'totalBAT', min: 10, max: 200 },
+                { id: 'totalRevenue', min: 1000, max: 50000 },
+                { id: 'totalProducts', min: 1, max: 10 },
+                { id: 'totalReferrals', min: 1, max: 8 }
+            ];
+            
+            stats.forEach(stat => {
+                if (Math.random() > 0.8) { // 20% chance to update
+                    const element = document.getElementById(stat.id);
+                    if (element) {
+                        const increment = Math.floor(Math.random() * (stat.max - stat.min + 1)) + stat.min;
+                        const currentValue = parseInt(element.textContent.replace(/[,\.]/g, ''));
+                        const newValue = currentValue + increment;
+                        element.textContent = newValue.toLocaleString();
+                    }
+                }
+            });
+        }
+
+        // Enhanced real-time updates
+        function simulateRealTimeUpdates() {
+            setInterval(() => {
+                updateDashboardStats();
+            }, 10000); // Update every 10 seconds
+            
+            // Simulate occasional notifications
+            setInterval(() => {
+                if (Math.random() > 0.95) { // 5% chance
+                    const messages = [
+                        'Nouvel utilisateur inscrit',
+                        'Conversion BAT effectuée',
+                        'Nouvelle vidéo publiée',
+                        'Produit ajouté au marketplace'
+                    ];
+                    const randomMessage = messages[Math.floor(Math.random() * messages.length)];
+                    showNotification(randomMessage, 'info', 2000);
+                }
+            }, 15000);
+        }<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BatMarket - Administration</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #2c3e50 0%, #3498db 100%);
+            min-height: 100vh;
+            line-height: 1.6;
+            padding-top: 80px; /* Space for fixed header */
+        }
+
+        /* Header */
+        .header {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(15px);
+            padding: 1rem 2rem;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 200;
+            margin-bottom: 0;
+        }
+
+        .header-content {
+            max-width: 1600px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 1.8rem;
+            font-weight: bold;
+            background: linear-gradient(45deg, #2c3e50, #3498db);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .admin-info {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .admin-avatar {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: linear-gradient(45deg, #e74c3c, #f39c12);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 1.2rem;
+            font-weight: bold;
+        }
+
+        .admin-details h3 {
+            color: #333;
+            font-size: 1rem;
+        }
+
+        .admin-details p {
+            color: #666;
+            font-size: 0.9rem;
+        }
+
+        .logout-btn {
+            padding: 8px 16px;
+            background: #e74c3c;
+            color: white;
+            border: none;
+            border-radius: 20px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .logout-btn:hover {
+            background: #c0392b;
+            transform: translateY(-2px);
+        }
+
+        /* Main Container */
+        .container {
+            max-width: 1600px;
+            margin: 0 auto;
+            padding: 2rem 2rem 0 2rem;
+        }
+
+        /* Dashboard Grid */
+        .dashboard-grid {
+            position: relative;
+            margin-bottom: 2rem;
+        }
+
+        /* Sidebar */
+        .sidebar {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(15px);
+            border-radius: 20px;
+            padding: 2rem;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+            height: calc(100vh - 100px);
+            position: fixed;
+            top: 80px;
+            left: 2rem;
+            width: 260px;
+            overflow-y: auto;
+            z-index: 100;
+        }
+
+        /* Mobile sidebar toggle */
+        .sidebar-toggle {
+            display: none;
+            position: fixed;
+            top: 90px;
+            left: 20px;
+            z-index: 1001;
+            background: rgba(255, 255, 255, 0.9);
+            border: none;
+            border-radius: 10px;
+            padding: 10px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            cursor: pointer;
+        }
+
+        .sidebar.mobile-hidden {
+            transform: translateX(-100%);
+        }
+
+        .nav-item {
+            display: block;
+            padding: 1rem;
+            margin-bottom: 0.5rem;
+            border-radius: 10px;
+            text-decoration: none;
+            color: #666;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            font-weight: 500;
+        }
+
+        .nav-item:hover {
+            background: linear-gradient(45deg, #2c3e50, #3498db);
+            color: white;
+            transform: translateX(5px);
+        }
+
+        .nav-item.active {
+            background: linear-gradient(45deg, #2c3e50, #3498db);
+            color: white;
+        }
+
+        /* Main Content */
+        .main-content {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(15px);
+            border-radius: 20px;
+            padding: 2rem;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+            min-height: calc(100vh - 100px);
+            margin-left: 300px;
+            position: relative;
+        }
+
+        .content-section {
+            display: none;
+            animation: fadeIn 0.5s ease-in;
+        }
+
+        .content-section.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Stats Cards */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .stat-card {
+            background: linear-gradient(135deg, #2c3e50 0%, #3498db 100%);
+            color: white;
+            padding: 2rem;
+            border-radius: 15px;
+            text-align: center;
+            transform: translateY(0);
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .stat-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+            transition: left 0.5s;
+        }
+
+        .stat-card:hover::before {
+            left: 100%;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.2);
+        }
+
+        .stat-icon {
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .stat-number {
+            font-size: 2.5rem;
+            font-weight: bold;
+            margin-bottom: 0.5rem;
+        }
+
+        .stat-label {
+            font-size: 0.9rem;
+            opacity: 0.9;
+        }
+
+        .stat-trend {
+            font-size: 0.8rem;
+            margin-top: 0.5rem;
+            padding: 0.2rem 0.5rem;
+            border-radius: 10px;
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        /* Special cards */
+        .revenue-card {
+            background: linear-gradient(135deg, #27ae60 0%, #2ecc71 100%);
+        }
+
+        .bat-card {
+            background: linear-gradient(135deg, #f39c12 0%, #f1c40f 100%);
+        }
+
+        .alert-card {
+            background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%);
+        }
+
+        /* Genealogy Tree */
+        .tree-container {
+            background: #f8f9ff;
+            border-radius: 15px;
+            padding: 2rem;
+            margin: 2rem 0;
+            overflow: auto;
+            max-height: 700px;
+        }
+
+        .tree-controls {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 2rem;
+            align-items: center;
+        }
+
+        .search-box {
+            padding: 10px 15px;
+            border: 2px solid #e1e8ed;
+            border-radius: 25px;
+            font-size: 0.9rem;
+            min-width: 250px;
+        }
+
+        .search-box:focus {
+            outline: none;
+            border-color: #3498db;
+        }
+
+        .filter-select {
+            padding: 10px 15px;
+            border: 2px solid #e1e8ed;
+            border-radius: 10px;
+            font-size: 0.9rem;
+        }
+
+        .tree {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-width: 1200px;
+        }
+
+        .tree-level {
+            display: flex;
+            justify-content: center;
+            gap: 1.5rem;
+            margin: 1rem 0;
+            flex-wrap: wrap;
+        }
+
+        .tree-node {
+            background: linear-gradient(135deg, #3498db 0%, #2980b9 100%);
+            color: white;
+            padding: 1.5rem;
+            border-radius: 15px;
+            min-width: 200px;
+            text-align: center;
+            position: relative;
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .tree-node:hover {
+            transform: translateY(-3px) scale(1.03);
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.2);
+        }
+
+        .tree-node.top-performer {
+            background: linear-gradient(135deg, #f39c12 0%, #e67e22 100%);
+            border: 3px solid #f1c40f;
+        }
+
+        .tree-node.new-user {
+            background: linear-gradient(135deg, #27ae60 0%, #2ecc71 100%);
+        }
+
+        .tree-node.inactive {
+            background: linear-gradient(135deg, #95a5a6 0%, #7f8c8d 100%);
+            opacity: 0.7;
+        }
+
+        .tree-connector {
+            width: 2px;
+            height: 30px;
+            background: #3498db;
+            margin: 0 auto;
+        }
+
+        .node-name {
+            font-weight: bold;
+            font-size: 1rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .node-stats {
+            font-size: 0.8rem;
+            opacity: 0.9;
+            margin-bottom: 0.5rem;
+        }
+
+        .node-rewards {
+            background: rgba(255, 255, 255, 0.2);
+            padding: 0.3rem 0.8rem;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            margin: 0.5rem 0;
+        }
+
+        .node-actions {
+            display: flex;
+            gap: 0.3rem;
+            justify-content: center;
+            margin-top: 0.5rem;
+        }
+
+        .node-btn {
+            width: 25px;
+            height: 25px;
+            border: none;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.3);
+            color: white;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.8rem;
+        }
+
+        .node-btn:hover {
+            background: rgba(255, 255, 255, 0.5);
+            transform: scale(1.1);
+        }
+
+        /* Tables */
+        .table-container {
+            overflow-x: auto;
+            border-radius: 15px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            margin: 2rem 0;
+        }
+
+        .table {
+            width: 100%;
+            border-collapse: collapse;
+            background: white;
+            font-size: 0.9rem;
+        }
+
+        .table th {
+            background: linear-gradient(45deg, #2c3e50, #3498db);
+            color: white;
+            padding: 1rem;
+            text-align: left;
+            font-weight: 500;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+
+        .table td {
+            padding: 1rem;
+            border-bottom: 1px solid #e1e8ed;
+        }
+
+        .table tr:hover {
+            background: #f8f9ff;
+        }
+
+        .status-badge {
+            padding: 0.3rem 0.8rem;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 500;
+        }
+
+        .status-active {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .status-pending {
+            background: #fff3cd;
+            color: #856404;
+        }
+
+        .status-blocked {
+            background: #f8d7da;
+            color: #721c24;
+        }
+
+        .status-verified {
+            background: #cce5ff;
+            color: #004085;
+        }
+
+        /* Forms */
+        .form-section {
+            background: #f8f9ff;
+            padding: 2rem;
+            border-radius: 15px;
+            margin: 2rem 0;
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .form-label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+            color: #333;
+        }
+
+        .form-input, .form-select, .form-textarea {
+            width: 100%;
+            padding: 12px 16px;
+            border: 2px solid #e1e8ed;
+            border-radius: 10px;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+            font-family: inherit;
+        }
+
+        .form-textarea {
+            resize: vertical;
+            min-height: 120px;
+        }
+
+        .form-input:focus, .form-select:focus, .form-textarea:focus {
+            outline: none;
+            border-color: #3498db;
+            box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.1);
+        }
+
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 10px;
+            font-size: 1rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-block;
+        }
+
+        .btn-primary {
+            background: linear-gradient(45deg, #2c3e50, #3498db);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        .btn-success {
+            background: linear-gradient(45deg, #27ae60, #2ecc71);
+            color: white;
+        }
+
+        .btn-danger {
+            background: linear-gradient(45deg, #e74c3c, #c0392b);
+            color: white;
+        }
+
+        .btn-warning {
+            background: linear-gradient(45deg, #f39c12, #e67e22);
+            color: white;
+        }
+
+        .btn-small {
+            padding: 6px 12px;
+            font-size: 0.8rem;
+        }
+
+        /* Charts placeholder */
+        .chart-container {
+            background: white;
+            padding: 2rem;
+            border-radius: 15px;
+            margin: 2rem 0;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            height: 400px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #666;
+            font-size: 1.1rem;
+        }
+
+        /* Action buttons */
+        .action-buttons {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 2rem;
+            flex-wrap: wrap;
+        }
+
+        .bulk-actions {
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+            margin-bottom: 1rem;
+            padding: 1rem;
+            background: #f8f9ff;
+            border-radius: 10px;
+        }
+
+        /* Filters */
+        .filters-bar {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 2rem;
+            padding: 1rem;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        /* Modal styles */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(5px);
+        }
+
+        .modal-content {
+            background: white;
+            margin: 5% auto;
+            padding: 2rem;
+            border-radius: 20px;
+            width: 90%;
+            max-width: 600px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            position: relative;
+            animation: modalSlideIn 0.3s ease;
+        }
+
+        @keyframes modalSlideIn {
+            from { opacity: 0; transform: translateY(-30px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid #e1e8ed;
+        }
+
+        .modal-title {
+            font-size: 1.3rem;
+            font-weight: 600;
+            color: #333;
+        }
+
+        .close {
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: #999;
+            transition: color 0.3s ease;
+        }
+
+        .close:hover {
+            color: #333;
+        }
+
+        /* Success/Error messages */
+        .success-message {
+            background: #d4edda;
+            color: #155724;
+            padding: 1rem;
+            border-radius: 10px;
+            margin: 1rem 0;
+            display: none;
+        }
+
+        .error-message {
+            background: #f8d7da;
+            color: #721c24;
+            padding: 1rem;
+            border-radius: 10px;
+            margin: 1rem 0;
+            display: none;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 1200px) {
+            .sidebar {
+                width: 240px;
+                left: 1rem;
+            }
+            
+            .main-content {
+                margin-left: 260px;
+            }
+            
+            .container {
+                padding: 0 1rem;
+            }
+        }
+
+        @media (max-width: 992px) {
+            .sidebar {
+                width: 220px;
+                left: 0.5rem;
+                padding: 1.5rem;
+            }
+            
+            .main-content {
+                margin-left: 240px;
+                padding: 1.5rem;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .sidebar-toggle {
+                display: block;
+            }
+            
+            .sidebar {
+                position: fixed;
+                top: 80px;
+                left: 0;
+                width: 280px;
+                height: calc(100vh - 80px);
+                z-index: 1000;
+                transform: translateX(-100%);
+                transition: transform 0.3s ease;
+                border-radius: 0;
+                border-top-right-radius: 20px;
+                border-bottom-right-radius: 20px;
+            }
+            
+            .sidebar.mobile-visible {
+                transform: translateX(0);
+            }
+            
+            .main-content {
+                margin-left: 0;
+                margin-top: 0;
+                min-height: calc(100vh - 80px);
+            }
+
+            .container {
+                padding: 1rem 1rem 0 1rem;
+            }
+
+            .header {
+                padding: 0.8rem 1rem;
+            }
+            
+            .header-content {
+                flex-direction: row;
+                gap: 1rem;
+            }
+            
+            .logo {
+                font-size: 1.4rem;
+            }
+            
+            .admin-info {
+                flex-direction: row;
+                gap: 0.8rem;
+            }
+            
+            .admin-avatar {
+                width: 40px;
+                height: 40px;
+                font-size: 1rem;
+            }
+            
+            .admin-details h3 {
+                font-size: 0.9rem;
+            }
+            
+            .admin-details p {
+                font-size: 0.8rem;
+            }
+
+            .stats-grid {
+                grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+                gap: 1rem;
+            }
+
+            .tree {
+                min-width: auto;
+            }
+
+            .tree-level {
+                flex-direction: column;
+                align-items: center;
+            }
+
+            .action-buttons {
+                flex-direction: column;
+                gap: 0.8rem;
+            }
+
+            .filters-bar {
+                flex-direction: column;
+                align-items: stretch;
+                gap: 0.8rem;
+            }
+
+            .modal-content {
+                width: 95%;
+                margin: 5% auto;
+                padding: 1.5rem;
+            }
+            
+            .table-container {
+                font-size: 0.8rem;
+            }
+            
+            .btn-small {
+                padding: 4px 8px;
+                font-size: 0.7rem;
+            }
+        }
+
+        @media (max-width: 480px) {
+            body {
+                padding-top: 70px;
+            }
+            
+            .header {
+                padding: 0.5rem 0.8rem;
+            }
+            
+            .container {
+                padding: 0.8rem;
+            }
+            
+            .main-content {
+                padding: 1rem;
+                min-height: calc(100vh - 70px);
+            }
+            
+            .sidebar {
+                width: 100%;
+                border-radius: 0;
+                top: 70px;
+                height: calc(100vh - 70px);
+            }
+            
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .stat-card {
+                padding: 1.5rem;
+            }
+            
+            .stat-number {
+                font-size: 2rem;
+            }
+            
+            .tree-controls {
+                flex-direction: column;
+                gap: 0.8rem;
+            }
+            
+            .search-box {
+                min-width: 100%;
+            }
+            
+            .form-section {
+                padding: 1.5rem;
+            }
+            
+            .modal-content {
+                margin: 2% auto;
+                padding: 1rem;
+            }
+            
+            .action-buttons .btn {
+                width: 100%;
+                text-align: center;
+            }
+        }
+
+        /* Sidebar overlay for mobile */
+        .sidebar-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 999;
+            backdrop-filter: blur(5px);
+        }
+        
+        .sidebar-overlay.active {
+            display: block;
+        }
+
+        /* Platform badges */
+        .platform-badge {
+            padding: 0.2rem 0.6rem;
+            border-radius: 15px;
+            font-size: 0.7rem;
+            font-weight: 500;
+            margin-right: 0.3rem;
+            display: inline-block;
+        }
+
+        .platform-badge.tiktok {
+            background: linear-gradient(45deg, #ff0050, #ff4081);
+            color: white;
+        }
+
+        .platform-badge.youtube {
+            background: linear-gradient(45deg, #ff0000, #cc0000);
+            color: white;
+        }
+
+        /* Video grid for modal */
+        .video-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+            margin-bottom: 1rem;
+        }
+
+        /* Loading States */
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #3498db;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* Pagination */
+        .pagination {
+            display: flex;
+            justify-content: center;
+            gap: 0.5rem;
+            margin: 2rem 0;
+        }
+
+        .pagination button {
+            padding: 8px 12px;
+            border: 1px solid #e1e8ed;
+            background: white;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .pagination button:hover {
+            background: #3498db;
+            color: white;
+        }
+
+        .pagination button.active {
+            background: #3498db;
+            color: white;
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <div class="header">
+        <div class="header-content">
+            <div class="logo">⚡ BatMarket Admin</div>
+            <div class="admin-info">
+                <div class="admin-avatar">AD</div>
+                <div class="admin-details">
+                    <h3>Admin System</h3>
+                    <p>Super Administrateur</p>
+                </div>
+                <button class="logout-btn" onclick="logout()">Déconnexion</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="container">
+        <!-- Mobile Sidebar Toggle -->
+        <button class="sidebar-toggle" onclick="toggleSidebar()">
+            <span style="font-size: 1.2rem;">☰</span>
+        </button>
+        
+        <!-- Sidebar Overlay -->
+        <div class="sidebar-overlay" onclick="closeSidebar()"></div>
+        
+        <div class="dashboard-grid">
+            <!-- Sidebar -->
+            <div class="sidebar" id="sidebar">
+                <nav>
+                    <a class="nav-item active" onclick="showSection('overview')">
+                        📊 Vue d'ensemble
+                    </a>
+                    <a class="nav-item" onclick="showSection('users')">
+                        👥 Gestion Utilisateurs
+                    </a>
+                    <a class="nav-item" onclick="showSection('referrals')">
+                        🌳 Arbre Parrainages
+                    </a>
+                    <a class="nav-item" onclick="showSection('bat-system')">
+                        🦇 Système BAT
+                    </a>
+                    <a class="nav-item" onclick="showSection('products')">
+                        🛍️ Produits & Marketplace
+                    </a>
+                    <a class="nav-item" onclick="showSection('transactions')">
+                        💰 Transactions
+                    </a>
+                    <a class="nav-item" onclick="showSection('reports')">
+                        📈 Rapports
+                    </a>
+                    <a class="nav-item" onclick="showSection('videos')">
+                        🎬 Gestion Vidéos
+                    </a>
+                    <a class="nav-item" onclick="showSection('settings')">
+                        ⚙️ Configuration
+                    </a>
+                    <a class="nav-item" onclick="showSection('support')">
+                        🎧 Support
+                    </a>
+                </nav>
+            </div>
+
+            <!-- Main Content -->
+            <div class="main-content">
+                
+                <!-- Overview Section -->
+                <div id="overview" class="content-section active">
+                    <h1>Vue d'ensemble</h1>
+                    <p style="margin-bottom: 2rem; color: #666;">Tableau de bord administrateur - Statistiques globales</p>
+                    
+                    <div class="stats-grid">
+                        <div class="stat-card">
+                            <div class="stat-icon">👥</div>
+                            <div class="stat-number" id="totalUsers">1,245</div>
+                            <div class="stat-label">Utilisateurs Total</div>
+                            <div class="stat-trend">+12% ce mois</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-icon">🆕</div>
+                            <div class="stat-number" id="newUsers">356</div>
+                            <div class="stat-label">Nouveaux ce mois</div>
+                            <div class="stat-trend">+8% vs mois dernier</div>
+                        </div>
+                        <div class="stat-card bat-card">
+                            <div class="stat-icon">🦇</div>
+                            <div class="stat-number" id="totalBAT">123,450</div>
+                            <div class="stat-label">BAT en circulation</div>
+                            <div class="stat-trend">+2,400 aujourd'hui</div>
+                        </div>
+                        <div class="stat-card revenue-card">
+                            <div class="stat-icon">💵</div>
+                            <div class="stat-number" id="totalRevenue">2,468,900</div>
+                            <div class="stat-label">XOF convertis</div>
+                            <div class="stat-trend">+15% ce mois</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-icon">🛍️</div>
+                            <div class="stat-number" id="totalProducts">3,890</div>
+                            <div class="stat-label">Produits actifs</div>
+                            <div class="stat-trend">+89 cette semaine</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-icon">🌳</div>
+                            <div class="stat-number" id="totalReferrals">8,756</div>
+                            <div class="stat-label">Parrainages total</div>
+                            <div class="stat-trend">+156 cette semaine</div>
+                        </div>
+                    </div>
+
+                    <div class="chart-container">
+                        📊 Graphique des inscriptions et revenus (Intégration Chart.js à prévoir)
+                    </div>
+
+                    <h3>Activité Récente</h3>
+                    <div class="table-container">
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th>Type</th>
+                                    <th>Utilisateur</th>
+                                    <th>Action</th>
+                                    <th>Montant</th>
+                                    <th>Date</th>
+                                    <th>Statut</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>Inscription</td>
+                                    <td>Marie Koné</td>
+                                    <td>Nouveau compte</td>
+                                    <td>-</td>
+                                    <td>Il y a 2 min</td>
+                                    <td><span class="status-badge status-active">Actif</span></td>
+                                </tr>
+                                <tr>
+                                    <td>Conversion</td>
+                                    <td>John Doe</td>
+                                    <td>1000 BAT → XOF</td>
+                                    <td>20,000 XOF</td>
+                                    <td>Il y a 5 min</td>
+                                    <td><span class="status-badge status-pending">En cours</span></td>
+                                </tr>
+                                <tr>
+                                    <td>Parrainage</td>
+                                    <td>Paul Martin</td>
+                                    <td>Nouveau filleul</td>
+                                    <td>+200 BAT</td>
+                                    <td>Il y a 10 min</td>
+                                    <td><span class="status-badge status-verified">Validé</span></td>
+                                </tr>
+                                <tr>
+                                    <td>Vente</td>
+                                    <td>TechStore</td>
+                                    <td>Smartphone vendu</td>
+                                    <td>250,000 XOF</td>
+                                    <td>Il y a 15 min</td>
+                                    <td><span class="status-badge status-verified">Complété</span></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Users Management Section -->
+                <div id="users" class="content-section">
+                    <h1>👥 Gestion des Utilisateurs</h1>
+                    <p style="margin-bottom: 2rem; color: #666;">Administrez tous les comptes utilisateurs</p>
+
+                    <div class="action-buttons">
+                        <button class="btn btn-primary" onclick="openModal('addUserModal')">+ Ajouter Utilisateur</button>
+                        <button class="btn btn-success" onclick="exportUsers()">📥 Exporter</button>
+                        <button class="btn btn-warning" onclick="bulkEmail()">📧 Email Groupé</button>
+                    </div>
+
+                    <div class="filters-bar">
+                        <input type="text" placeholder="Rechercher par nom, email..." class="search-box" id="userSearch" oninput="filterUsers()">
+                        <select class="filter-select" id="statusFilter" onchange="filterUsers()">
+                            <option value="">Tous les statuts</option>
+                            <option value="active">Actif</option>
+                            <option value="pending">En attente</option>
+                            <option value="blocked">Bloqué</option>
+                        </select>
+                        <select class="filter-select" id="roleFilter" onchange="filterUsers()">
+                            <option value="">Tous les rôles</option>
+                            <option value="user">Utilisateur</option>
+                            <option value="seller">Vendeur</option>
+                            <option value="admin">Administrateur</option>
+                        </select>
+                        <button class="btn btn-primary" onclick="resetFilters()">🔄 Reset</button>
+                    </div>
+
+                    <div class="bulk-actions">
+                        <input type="checkbox" id="selectAll" onchange="toggleSelectAll()"> Tout sélectionner
+                        <button class="btn btn-danger btn-small" onclick="bulkBlock()">🚫 Bloquer</button>
+                        <button class="btn btn-success btn-small" onclick="bulkActivate()">✅ Activer</button>
+                        <button class="btn btn-warning btn-small" onclick="bulkDelete()">🗑️ Supprimer</button>
+                    </div>
+
+                    <div class="table-container">
+                        <table class="table" id="usersTable">
+                            <thead>
+                                <tr>
+                                    <th><input type="checkbox" id="selectAllHeader"></th>
+                                    <th>ID</th>
+                                    <th>Nom</th>
+                                    <th>Email</th>
+                                    <th>BAT</th>
+                                    <th>Parrainages</th>
+                                    <th>Inscription</th>
+                                    <th>Statut</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td><input type="checkbox" class="user-checkbox" value="001"></td>
+                                    <td><strong>001</strong></td>
+                                    <td>Alexandre Dupont</td>
+                                    <td>alex@email.com</td>
+                                    <td>5,240 BAT</td>
+                                    <td>45</td>
+                                    <td>15 Mars 2024</td>
+                                    <td><span class="status-badge status-active">Actif</span></td>
+                                    <td>
+                                        <button class="btn btn-primary btn-small" onclick="viewUser('001')">👁️</button>
+                                        <button class="btn btn-warning btn-small" onclick="editUser('001')">✏️</button>
+                                        <button class="btn btn-danger btn-small" onclick="blockUser('001')">🚫</button>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td><input type="checkbox" class="user-checkbox" value="002"></td>
+                                    <td><strong>002</strong></td>
+                                    <td>Marie Koné</td>
+                                    <td>marie@email.com</td>
+                                    <td>3,120 BAT</td>
+                                    <td>15</td>
+                                    <td>20 Mars 2024</td>
+                                    <td><span class="status-badge status-active">Actif</span></td>
+                                    <td>
+                                        <button class="btn btn-primary btn-small" onclick="viewUser('002')">👁️</button>
+                                        <button class="btn btn-warning btn-small" onclick="editUser('002')">✏️</button>
+                                        <button class="btn btn-danger btn-small" onclick="blockUser('002')">🚫</button>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td><input type="checkbox" class="user-checkbox" value="003"></td>
+                                    <td><strong>003</strong></td>
+                                    <td>Paul Martin</td>
+                                    <td>paul@email.com</td>
+                                    <td>2,890 BAT</td>
+                                    <td>12</td>
+                                    <td>25 Mars 2024</td>
+                                    <td><span class="status-badge status-pending">En attente</span></td>
+                                    <td>
+                                        <button class="btn btn-primary btn-small" onclick="viewUser('003')">👁️</button>
+                                        <button class="btn btn-warning btn-small" onclick="editUser('003')">✏️</button>
+                                        <button class="btn btn-success btn-small" onclick="activateUser('003')">✅</button>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td><input type="checkbox" class="user-checkbox" value="004"></td>
+                                    <td><strong>004</strong></td>
+                                    <td>Sophie Laurent</td>
+                                    <td>sophie@email.com</td>
+                                    <td>1,456 BAT</td>
+                                    <td>8</td>
+                                    <td>1 Avril 2024</td>
+                                    <td><span class="status-badge status-blocked">Bloqué</span></td>
+                                    <td>
+                                        <button class="btn btn-primary btn-small" onclick="viewUser('004')">👁️</button>
+                                        <button class="btn btn-warning btn-small" onclick="editUser('004')">✏️</button>
+                                        <button class="btn btn-success btn-small" onclick="unblockUser('004')">🔓</button>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <div class="pagination">
+                        <button onclick="changePage(1)">1</button>
+                        <button onclick="changePage(2)" class="active">2</button>
+                        <button onclick="changePage(3)">3</button>
+                        <button onclick="changePage(4)">4</button>
+                        <button onclick="changePage(5)">5</button>
+                    </div>
+                </div>
+
+                <!-- Referrals Tree Section -->
+                <div id="referrals" class="content-section">
+                    <h1>🌳 Arbre Généalogique Global des Parrainages</h1>
+                    <p style="margin-bottom: 2rem; color: #666;">Visualisation complète du réseau de parrainage</p>
+
+                    <div class="tree-controls">
+                        <input type="text" placeholder="Rechercher un utilisateur..." class="search-box" id="treeSearch">
+                        <select class="filter-select" id="levelFilter">
+                            <option value="">Tous les niveaux</option>
+                            <option value="1">Niveau 1 seulement</option>
+                            <option value="2">Jusqu'au niveau 2</option>
+                            <option value="3">Jusqu'au niveau 3</option>
+                        </select>
+                        <select class="filter-select" id="performanceFilter">
+                            <option value="">Tous les utilisateurs</option>
+                            <option value="top">Top performers</option>
+                            <option value="new">Nouveaux</option>
+                            <option value="inactive">Inactifs</option>
+                        </select>
+                        <button class="btn btn-primary" onclick="expandAll()">Tout Développer</button>
+                        <button class="btn btn-warning" onclick="collapseAll()">Tout Réduire</button>
+                    </div>
+
+                    <div class="tree-container">
+                        <div class="tree">
+                            <!-- Level 0 - Top Performers -->
+                            <div class="tree-level">
+                                <div class="tree-node top-performer" onclick="showUserDetails('alex')">
+                                    <div class="node-name">👑 Alexandre D.</div>
+                                    <div class="node-stats">45 filleuls directs • Top Parrain</div>
+                                    <div class="node-rewards">5,240 BAT gagnés</div>
+                                    <div class="node-actions">
+                                        <button class="node-btn" title="Voir profil">👁️</button>
+                                        <button class="node-btn" title="Envoyer message">💬</button>
+                                        <button class="node-btn" title="Récompenser">🎁</button>
+                                    </div>
+                                </div>
+                                <div class="tree-node top-performer" onclick="showUserDetails('sarah')">
+                                    <div class="node-name">🌟 Sarah K.</div>
+                                    <div class="node-stats">38 filleuls directs • VIP</div>
+                                    <div class="node-rewards">4,680 BAT gagnés</div>
+                                    <div class="node-actions">
+                                        <button class="node-btn" title="Voir profil">👁️</button>
+                                        <button class="node-btn" title="Envoyer message">💬</button>
+                                        <button class="node-btn" title="Récompenser">🎁</button>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="tree-connector"></div>
+                            
+                            <!-- Level 1 - Direct Referrals -->
+                            <div class="tree-level">
+                                <div class="tree-node" onclick="showUserDetails('marie')">
+                                    <div class="node-name">Marie K.</div>
+                                    <div class="node-stats">15 filleuls • Actif</div>
+                                    <div class="node-rewards">3,120 BAT</div>
+                                    <div class="node-actions">
+                                        <button class="node-btn" title="Voir profil">👁️</button>
+                                        <button class="node-btn" title="Modifier">✏️</button>
+                                    </div>
+                                </div>
+                                <div class="tree-node" onclick="showUserDetails('paul')">
+                                    <div class="node-name">Paul M.</div>
+                                    <div class="node-stats">12 filleuls • Actif</div>
+                                    <div class="node-rewards">2,890 BAT</div>
+                                    <div class="node-actions">
+                                        <button class="node-btn" title="Voir profil">👁️</button>
+                                        <button class="node-btn" title="Modifier">✏️</button>
+                                    </div>
+                                </div>
+                                <div class="tree-node" onclick="showUserDetails('sophie')">
+                                    <div class="node-name">Sophie L.</div>
+                                    <div class="node-stats">8 filleuls • Actif</div>
+                                    <div class="node-rewards">1,456 BAT</div>
+                                    <div class="node-actions">
+                                        <button class="node-btn" title="Voir profil">👁️</button>
+                                        <button class="node-btn" title="Modifier">✏️</button>
+                                    </div>
+                                </div>
+                                <div class="tree-node new-user" onclick="showUserDetails('john')">
+                                    <div class="node-name">🆕 John D.</div>
+                                    <div class="node-stats">10 filleuls • Nouveau talent</div>
+                                    <div class="node-rewards">2,450 BAT</div>
+                                    <div class="node-actions">
+                                        <button class="node-btn" title="Voir profil">👁️</button>
+                                        <button class="node-btn" title="Booster">⚡</button>
+                                    </div>
+                                </div>
+                                <div class="tree-node inactive" onclick="showUserDetails('thomas')">
+                                    <div class="node-name">Thomas R.</div>
+                                    <div class="node-stats">3 filleuls • Inactif 30j</div>
+                                    <div class="node-rewards">678 BAT</div>
+                                    <div class="node-actions">
+                                        <button class="node-btn" title="Réactiver">🔄</button>
+                                        <button class="node-btn" title="Contacter">📞</button>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="tree-connector"></div>
+                            
+                            <!-- Level 2 - Second Level -->
+                            <div class="tree-level">
+                                <div class="tree-node">
+                                    <div class="node-name">Ahmed B.</div>
+                                    <div class="node-stats">5 filleuls • Niveau 2</div>
+                                    <div class="node-rewards">Bonus +250 BAT</div>
+                                </div>
+                                <div class="tree-node">
+                                    <div class="node-name">Lisa T.</div>
+                                    <div class="node-stats">3 filleuls • Niveau 2</div>
+                                    <div class="node-rewards">Bonus +150 BAT</div>
+                                </div>
+                                <div class="tree-node">
+                                    <div class="node-name">Marc R.</div>
+                                    <div class="node-stats">7 filleuls • Niveau 2</div>
+                                    <div class="node-rewards">Bonus +350 BAT</div>
+                                </div>
+                                <div class="tree-node new-user">
+                                    <div class="node-name">🆕 Emma S.</div>
+                                    <div class="node-stats">2 filleuls • Nouvelle</div>
+                                    <div class="node-rewards">Bonus +100 BAT</div>
+                                </div>
+                                <div class="tree-node">
+                                    <div class="node-name">David L.</div>
+                                    <div class="node-stats">4 filleuls • Niveau 2</div>
+                                    <div class="node-rewards">Bonus +200 BAT</div>
+                                </div>
+                            </div>
+                            
+                            <div class="tree-connector"></div>
+                            
+                            <!-- Level 3 - Third Level -->
+                            <div class="tree-level">
+                                <div class="tree-node">
+                                    <div class="node-name">Clara M.</div>
+                                    <div class="node-stats">1 filleul • Niveau 3</div>
+                                    <div class="node-rewards">Bonus +25 BAT</div>
+                                </div>
+                                <div class="tree-node">
+                                    <div class="node-name">Omar K.</div>
+                                    <div class="node-stats">2 filleuls • Niveau 3</div>
+                                    <div class="node-rewards">Bonus +50 BAT</div>
+                                </div>
+                                <div class="tree-node">
+                                    <div class="node-name">Fatou D.</div>
+                                    <div class="node-stats">1 filleul • Niveau 3</div>
+                                    <div class="node-rewards">Bonus +25 BAT</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="stats-grid" style="grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));">
+                        <div class="stat-card">
+                            <div class="stat-icon">🏆</div>
+                            <div class="stat-number">2</div>
+                            <div class="stat-label">Top Performers</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-icon">👥</div>
+                            <div class="stat-number">83</div>
+                            <div class="stat-label">Parrains Actifs</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-icon">🆕</div>
+                            <div class="stat-number">12</div>
+                            <div class="stat-label">Nouveaux ce mois</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-icon">😴</div>
+                            <div class="stat-number">5</div>
+                            <div class="stat-label">Inactifs</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-icon">💰</div>
+                            <div class="stat-number">18,450</div>
+                            <div class="stat-label">BAT Distribués</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- BAT System Section -->
+                <div id="bat-system" class="content-section">
+                    <h1>🦇 Système BAT</h1>
+                    <p style="margin-bottom: 2rem; color: #666;">Configuration et gestion du système de récompenses</p>
+
+                    <div class="stats-grid">
+                        <div class="stat-card bat-card">
+                            <div class="stat-icon">🦇</div>
+                            <div class="stat-number">123,450</div>
+                            <div class="stat-label">BAT Total en Circulation</div>
+                        </div>
+                        <div class="stat-card revenue-card">
+                            <div class="stat-icon">💱</div>
+                            <div class="stat-number">20</div>
+                            <div class="stat-label">Taux XOF par BAT</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-icon">📤</div>
+                            <div class="stat-number">45,890</div>
+                            <div class="stat-label">BAT Distribués</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-icon">💸</div>
+                            <div class="stat-number">32,100</div>
+                            <div class="stat-label">BAT Convertis</div>
+                        </div>
+                    </div>
+
+                    <div class="form-section">
+                        <h3>⚙️ Configuration du Système</h3>
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem;">
+                            <div>
+                                <div class="form-group">
+                                    <label class="form-label">Taux de conversion (1 BAT = ? XOF)</label>
+                                    <input type="number" class="form-input" value="20" id="conversionRate">
+                                </div>
+                                <div class="form-group">
+                                    <label class="form-label">Récompense parrainage direct (BAT)</label>
+                                    <input type="number" class="form-input" value="200" id="directReferralReward">
+                                </div>
+                                <div class="form-group">
+                                    <label class="form-label">Bonus niveau 2 (BAT)</label>
+                                    <input type="number" class="form-input" value="50" id="level2Bonus">
+                                </div>
+                                <div class="form-group">
+                                    <label class="form-label">Bonus niveau 3 (BAT)</label>
+                                    <input type="number" class="form-input" value="25" id="level3Bonus">
+                                </div>
+                            </div>
+                            <div>
+                                <div class="form-group">
+                                    <label class="form-label">BAT par vente (%)</label>
+                                    <input type="number" class="form-input" value="0.1" step="0.01" id="saleRewardPercent">
+                                </div>
+                                <div class="form-group">
+                                    <label class="form-label">Minimum conversion (BAT)</label>
+                                    <input type="number" class="form-input" value="100" id="minConversion">
+                                </div>
+                                <div class="form-group">
+                                    <label class="form-label">Frais conversion (%)</label>
+                                    <input type="number" class="form-input" value="2" step="0.1" id="conversionFee">
+                                </div>
+                                <div class="form-group">
+                                    <label class="form-label">Délai conversion (heures)</label>
+                                    <input type="number" class="form-input" value="24" id="conversionDelay">
+                                </div>
+                            </div>
+                        </div>
+                        <button class="btn btn-primary" onclick="updateBATConfig()">💾 Sauvegarder Configuration</button>
+                        <div id="batConfigSuccess" class="success-message">Configuration mise à jour avec succès !</div>
+                    </div>
+
+                    <h3>🎁 Distribution Manuelle de BAT</h3>
+                    <div class="form-section">
+                        <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 1rem;">
+                            <div class="form-group">
+                                <label class="form-label">ID Utilisateur ou Email</label>
+                                <input type="text" class="form-input" placeholder="001 ou user@email.com" id="rewardUserId">
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Montant BAT</label>
+                                <input type="number" class="form-input" placeholder="100" id="rewardAmount">
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Raison</label>
+                                <select class="form-select" id="rewardReason">
+                                    <option>Bonus performance</option>
+                                    <option>Récompense spéciale</option>
+                                    <option>Compensation</option>
+                                    <option>Évènement promotionnel</option>
+                                    <option>Autre</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Note interne (optionnel)</label>
+                            <textarea class="form-textarea" placeholder="Détails sur cette distribution..." id="rewardNote"></textarea>
+                        </div>
+                        <button class="btn btn-success" onclick="distributeBAT()">🎁 Distribuer BAT</button>
+                        <div id="rewardSuccess" class="success-message">BAT distribués avec succès !</div>
+                        <div id="rewardError" class="error-message">Erreur lors de la distribution.</div>
+                    </div>
+
+                    <h3>📊 Statistiques de Conversion</h3>
+                    <div class="table-container">
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th>Date</th>
+                                    <th>Utilisateur</th>
+                                    <th>BAT Convertis</th>
+                                    <th>XOF</th>
+                                    <th>Frais</th>
+                                    <th>Méthode</th>
+                                    <th>Statut</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>Aujourd'hui 14:30</td>
+                                    <td>John Doe</td>
+                                    <td>1,000</td>
+                                    <td>19,600 XOF</td>
+                                    <td>400 XOF</td>
+                                    <td>Orange Money</td>
+                                    <td><span class="status-badge status-pending">En cours</span></td>
+                                </tr>
+                                <tr>
+                                    <td>Hier 16:45</td>
+                                    <td>Marie Koné</td>
+                                    <td>500</td>
+                                    <td>9,800 XOF</td>
+                                    <td>200 XOF</td>
+                                    <td>MTN Money</td>
+                                    <td><span class="status-badge status-verified">Complété</span></td>
+                                </tr>
+                                <tr>
+                                    <td>2 jours 09:15</td>
+                                    <td>Paul Martin</td>
+                                    <td>750</td>
+                                    <td>14,700 XOF</td>
+                                    <td>300 XOF</td>
+                                    <td>Virement bancaire</td>
+                                    <td><span class="status-badge status-verified">Complété</span></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Products Section -->
+                <div id="products" class="content-section">
+                    <h1>🛍️ Produits & Marketplace</h1>
+                    <p style="margin-bottom: 2rem; color: #666;">Gestion des produits et de la marketplace</p>
+
+                    <div class="stats-grid">
+                        <div class="stat-card">
+                            <div class="stat-icon">📦</div>
+                            <div class="stat-number">3,890</div>
+                            <div class="stat-label">Produits Actifs</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-icon">⏳</div>
+                            <div class="stat-number">145</div>
+                            <div class="stat-label">En Attente</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-icon">🏪</div>
+                            <div class="stat-number">567</div>
+                            <div class="stat-label">Vendeurs Actifs</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-icon">💰</div>
+                            <div class="stat-number">2,450,000</div>
+                            <div class="stat-label">CA ce mois (XOF)</div>
+                        </div>
+                    </div>
+
+                    <div class="action-buttons">
+                        <button class="btn btn-primary" onclick="openModal('addProductModal')">+ Ajouter Produit</button>
+                        <button class="btn btn-warning" onclick="openModal('categoryModal')">🏷️ Gérer Catégories</button>
+                        <button class="btn btn-success" onclick="exportProducts()">📥 Exporter</button>
+                        <button class="btn btn-danger" onclick="bulkProductAction()">🗑️ Actions Groupées</button>
+                    </div>
+
+                    <div class="filters-bar">
+                        <input type="text" placeholder="Rechercher produits..." class="search-box" id="productSearch">
+                        <select class="filter-select" id="categoryFilter">
+                            <option value="">Toutes catégories</option>
+                            <option value="electronics">Électronique</option>
+                            <option value="fashion">Mode</option>
+                            <option value="home">Maison</option>
+                            <option value="services">Services</option>
+                        </select>
+                        <select class="filter-select" id="statusFilter">
+                            <option value="">Tous statuts</option>
+                            <option value="active">Actif</option>
+                            <option value="pending">En attente</option>
+                            <option value="suspended">Suspendu</option>
+                        </select>
+                        <select class="filter-select" id="priceFilter">
+                            <option value="">Tous prix</option>
+                            <option value="low">< 50,000 XOF</option>
+                            <option value="medium">50,000 - 200,000 XOF</option>
+                            <option value="high">> 200,000 XOF</option>
+                        </select>
+                    </div>
+
+                    <div class="table-container">
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th><input type="checkbox" id="selectAllProducts"></th>
+                                    <th>ID</th>
+                                    <th>Produit</th>
+                                    <th>Vendeur</th>
+                                    <th>Catégorie</th>
+                                    <th>Prix</th>
+                                    <th>Stock</th>
+                                    <th>Vues</th>
+                                    <th>Statut</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td><input type="checkbox" class="product-checkbox"></td>
+                                    <td><strong>P001</strong></td>
+                                    <td>Smartphone Galaxy Pro</td>
+                                    <td>TechStore</td>
+                                    <td>Électronique</td>
+                                    <td>250,000 XOF</td>
+                                    <td>15</td>
+                                    <td>1,234</td>
+                                    <td><span class="status-badge status-active">Actif</span></td>
+                                    <td>
+                                        <button class="btn btn-primary btn-small">👁️</button>
+                                        <button class="btn btn-warning btn-small">✏️</button>
+                                        <button class="btn btn-danger btn-small">🚫</button>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td><input type="checkbox" class="product-checkbox"></td>
+                                    <td><strong>P002</strong></td>
+                                    <td>T-shirt Africain Premium</td>
+                                    <td>AfriMode</td>
+                                    <td>Mode</td>
+                                    <td>25,000 XOF</td>
+                                    <td>50</td>
+                                    <td>567</td>
+                                    <td><span class="status-badge status-active">Actif</span></td>
+                                    <td>
+                                        <button class="btn btn-primary btn-small">👁️</button>
+                                        <button class="btn btn-warning btn-small">✏️</button>
+                                        <button class="btn btn-danger btn-small">🚫</button>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td><input type="checkbox" class="product-checkbox"></td>
+                                    <td><strong>P003</strong></td>
+                                    <td>Formation Marketing Digital</td>
+                                    <td>EduMarket</td>
+                                    <td>Services</td>
+                                    <td>75,000 XOF</td>
+                                    <td>∞</td>
+                                    <td>890</td>
+                                    <td><span class="status-badge status-pending">En attente</span></td>
+                                    <td>
+                                        <button class="btn btn-success btn-small">✅</button>
+                                        <button class="btn btn-warning btn-small">✏️</button>
+                                        <button class="btn btn-danger btn-small">❌</button>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Transactions Section -->
+                <div id="transactions" class="content-section">
+                    <h1>💰 Transactions</h1>
+                    <p style="margin-bottom: 2rem; color: #666;">Suivi de toutes les transactions financières</p>
+
+                    <div class="stats-grid">
+                        <div class="stat-card revenue-card">
+                            <div class="stat-icon">💵</div>
+                            <div class="stat-number">12,450,000</div>
+                            <div class="stat-label">Volume Total (XOF)</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-icon">🔄</div>
+                            <div class="stat-number">1,256</div>
+                            <div class="stat-label">Transactions Aujourd'hui</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-icon">⏳</div>
+                            <div class="stat-number">45</div>
+                            <div class="stat-label">En Attente</div>
+                        </div>
+                        <div class="stat-card alert-card">
+                            <div class="stat-icon">⚠️</div>
+                            <div class="stat-number">3</div>
+                            <div class="stat-label">Litiges</div>
+                        </div>
+                    </div>
+
+                    <div class="filters-bar">
+                        <input type="text" placeholder="ID transaction ou utilisateur..." class="search-box">
+                        <select class="filter-select">
+                            <option value="">Tous types</option>
+                            <option value="sale">Vente</option>
+                            <option value="conversion">Conversion BAT</option>
+                            <option value="referral">Parrainage</option>
+                            <option value="bonus">Bonus</option>
+                        </select>
+                        <select class="filter-select">
+                            <option value="">Tous statuts</option>
+                            <option value="completed">Complétée</option>
+                            <option value="pending">En attente</option>
+                            <option value="failed">Échouée</option>
+                            <option value="disputed">Litige</option>
+                        </select>
+                        <input type="date" class="form-input" style="width: auto;">
+                    </div>
+
+                    <div class="table-container">
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th>ID Transaction</th>
+                                    <th>Type</th>
+                                    <th>Utilisateur</th>
+                                    <th>Montant</th>
+                                    <th>Frais</th>
+                                    <th>Date</th>
+                                    <th>Statut</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td><strong>TXN-2024-001</strong></td>
+                                    <td>Vente</td>
+                                    <td>Marie Koné</td>
+                                    <td>150,000 XOF</td>
+                                    <td>7,500 XOF</td>
+                                    <td>Aujourd'hui 15:30</td>
+                                    <td><span class="status-badge status-verified">Complétée</span></td>
+                                    <td>
+                                        <button class="btn btn-primary btn-small">👁️</button>
+                                        <button class="btn btn-warning btn-small">📄</button>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td><strong>TXN-2024-002</strong></td>
+                                    <td>Conversion BAT</td>
+                                    <td>Paul Martin</td>
+                                    <td>50,000 XOF</td>
+                                    <td>1,000 XOF</td>
+                                    <td>Aujourd'hui 14:15</td>
+                                    <td><span class="status-badge status-pending">En attente</span></td>
+                                    <td>
+                                        <button class="btn btn-primary btn-small">👁️</button>
+                                        <button class="btn btn-success btn-small">✅</button>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td><strong>TXN-2024-003</strong></td>
+                                    <td>Parrainage</td>
+                                    <td>Sophie Laurent</td>
+                                    <td>4,000 BAT</td>
+                                    <td>-</td>
+                                    <td>Hier 18:22</td>
+                                    <td><span class="status-badge status-verified">Complétée</span></td>
+                                    <td>
+                                        <button class="btn btn-primary btn-small">👁️</button>
+                                        <button class="btn btn-warning btn-small">📄</button>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td><strong>TXN-2024-004</strong></td>
+                                    <td>Vente</td>
+                                    <td>TechStore</td>
+                                    <td>280,000 XOF</td>
+                                    <td>14,000 XOF</td>
+                                    <td>Il y a 2h</td>
+                                    <td><span class="status-badge status-blocked">Litige</span></td>
+                                    <td>
+                                        <button class="btn btn-primary btn-small">👁️</button>
+                                        <button class="btn btn-danger btn-small">⚠️</button>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Reports Section -->
+                <div id="reports" class="content-section">
+                    <h1>📈 Rapports & Analyses</h1>
+                    <p style="margin-bottom: 2rem; color: #666;">Statistiques détaillées et rapports de performance</p>
+
+                    <div class="action-buttons">
+                        <button class="btn btn-primary">📊 Rapport Mensuel</button>
+                        <button class="btn btn-success">📈 Analyse Croissance</button>
+                        <button class="btn btn-warning">🦇 Rapport BAT</button>
+                        <button class="btn btn-danger">⚠️ Rapport Sécurité</button>
+                    </div>
+
+                    <div class="stats-grid">
+                        <div class="stat-card">
+                            <div class="stat-icon">📅</div>
+                            <div class="stat-number">30</div>
+                            <div class="stat-label">Jours d'Activité</div>
+                        </div>
+                        <div class="stat-card revenue-card">
+                            <div class="stat-icon">📊</div>
+                            <div class="stat-number">+25%</div>
+                            <div class="stat-label">Croissance Mensuelle</div>
+                        </div>
+                        <div class="stat-card bat-card">
+                            <div class="stat-icon">🎯</div>
+                            <div class="stat-number">92%</div>
+                            <div class="stat-label">Taux Rétention</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-icon">💼</div>
+                            <div class="stat-number">156</div>
+                            <div class="stat-label">Rapports Générés</div>
+                        </div>
+                    </div>
+
+                    <div class="chart-container">
+                        📈 Graphiques d'analyse (Chart.js à intégrer)
+                        <br><small>Évolution des inscriptions, revenus et transactions sur les 12 derniers mois</small>
+                    </div>
+
+                    <h3>Rapports Récents</h3>
+                    <div class="table-container">
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th>Rapport</th>
+                                    <th>Période</th>
+                                    <th>Généré par</th>
+                                    <th>Date</th>
+                                    <th>Taille</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>Rapport Mensuel Avril 2024</td>
+                                    <td>01/04 - 30/04/2024</td>
+                                    <td>Admin System</td>
+                                    <td>01/05/2024</td>
+                                    <td>2.4 MB</td>
+                                    <td>
+                                        <button class="btn btn-primary btn-small">📥</button>
+                                        <button class="btn btn-warning btn-small">👁️</button>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>Analyse BAT Q1 2024</td>
+                                    <td>01/01 - 31/03/2024</td>
+                                    <td>Admin System</td>
+                                    <td>05/04/2024</td>
+                                    <td>1.8 MB</td>
+                                    <td>
+                                        <button class="btn btn-primary btn-small">📥</button>
+                                        <button class="btn btn-warning btn-small">👁️</button>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Support Section -->
+                <div id="support" class="content-section">
+                    <h1>🎧 Support Client</h1>
+                    <p style="margin-bottom: 2rem; color: #666;">Gestion du support et des tickets clients</p>
+
+                    <div class="stats-grid">
+                        <div class="stat-card">
+                            <div class="stat-icon">🎫</div>
+                            <div class="stat-number">89</div>
+                            <div class="stat-label">Tickets Ouverts</div>
+                        </div>
+                        <div class="stat-card alert-card">
+                            <div class="stat-icon">🔥</div>
+                            <div class="stat-number">12</div>
+                            <div class="stat-label">Urgents</div>
+                        </div>
+                        <div class="stat-card revenue-card">
+                            <div class="stat-icon">✅</div>
+                            <div class="stat-number">245</div>
+                            <div class="stat-label">Résolus ce mois</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-icon">⏱️</div>
+                            <div class="stat-number">2.5h</div>
+                            <div class="stat-label">Temps Moyen</div>
+                        </div>
+                    </div>
+
+                    <div class="action-buttons">
+                        <button class="btn btn-primary">+ Nouveau Ticket</button>
+                        <button class="btn btn-warning">📧 Envoi Groupé</button>
+                        <button class="btn btn-success">📋 Base Connaissance</button>
+                    </div>
+
+                    <div class="filters-bar">
+                        <input type="text" placeholder="Rechercher tickets..." class="search-box">
+                        <select class="filter-select">
+                            <option value="">Toutes priorités</option>
+                            <option value="low">Basse</option>
+                            <option value="medium">Moyenne</option>
+                            <option value="high">Haute</option>
+                            <option value="urgent">Urgente</option>
+                        </select>
+                        <select class="filter-select">
+                            <option value="">Tous statuts</option>
+                            <option value="open">Ouvert</option>
+                            <option value="pending">En attente</option>
+                            <option value="resolved">Résolu</option>
+                            <option value="closed">Fermé</option>
+                        </select>
+                    </div>
+
+                    <div class="table-container">
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th>ID Ticket</th>
+                                    <th>Sujet</th>
+                                    <th>Utilisateur</th>
+                                    <th>Priorité</th>
+                                    <th>Statut</th>
+                                    <th>Assigné</th>
+                                    <th>Créé</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td><strong>#SUP-2024-089</strong></td>
+                                    <td>Problème conversion BAT</td>
+                                    <td>Marie Koné</td>
+                                    <td><span class="status-badge" style="background: #ff6b6b; color: white;">Urgente</span></td>
+                                    <td><span class="status-badge status-pending">Ouvert</span></td>
+                                    <td>Support Agent 1</td>
+                                    <td>Il y a 30 min</td>
+                                    <td>
+                                        <button class="btn btn-primary btn-small">👁️</button>
+                                        <button class="btn btn-success btn-small">💬</button>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td><strong>#SUP-2024-088</strong></td>
+                                    <td>Question parrainage</td>
+                                    <td>Paul Martin</td>
+                                    <td><span class="status-badge" style="background: #4ecdc4; color: white;">Basse</span></td>
+                                    <td><span class="status-badge status-verified">Résolu</span></td>
+                                    <td>Support Agent 2</td>
+                                    <td>Il y a 2h</td>
+                                    <td>
+                                        <button class="btn btn-primary btn-small">👁️</button>
+                                        <button class="btn btn-warning btn-small">📋</button>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Videos Management Section -->
+                <div id="videos" class="content-section">
+                    <h1>🎬 Gestion des Vidéos</h1>
+                    <p style="margin-bottom: 2rem; color: #666;">Gestion du contenu vidéo pour TikTok et YouTube</p>
+
+                    <div class="stats-grid">
+                        <div class="stat-card">
+                            <div class="stat-icon">📹</div>
+                            <div class="stat-number">156</div>
+                            <div class="stat-label">Vidéos Totales</div>
+                        </div>
+                        <div class="stat-card revenue-card">
+                            <div class="stat-icon">🎬</div>
+                            <div class="stat-number">89</div>
+                            <div class="stat-label">Publiées TikTok</div>
+                        </div>
+                        <div class="stat-card alert-card">
+                            <div class="stat-icon">📺</div>
+                            <div class="stat-number">67</div>
+                            <div class="stat-label">Publiées YouTube</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-icon">⏳</div>
+                            <div class="stat-number">23</div>
+                            <div class="stat-label">En Attente</div>
+                        </div>
+                    </div>
+
+                    <div class="action-buttons">
+                        <button class="btn btn-primary" onclick="openModal('addVideoModal')">+ Ajouter Vidéo</button>
+                        <button class="btn btn-success" onclick="scheduleVideos()">📅 Programmer</button>
+                        <button class="btn btn-warning" onclick="bulkVideoAction()">🔄 Actions Groupées</button>
+                        <button class="btn btn-danger" onclick="exportVideos()">📥 Exporter</button>
+                    </div>
+
+                    <div class="filters-bar">
+                        <input type="text" placeholder="Rechercher vidéos..." class="search-box" id="videoSearch">
+                        <select class="filter-select" id="platformFilter">
+                            <option value="">Toutes plateformes</option>
+                            <option value="tiktok">TikTok</option>
+                            <option value="youtube">YouTube</option>
+                            <option value="both">Les deux</option>
+                        </select>
+                        <select class="filter-select" id="videoStatusFilter">
+                            <option value="">Tous statuts</option>
+                            <option value="draft">Brouillon</option>
+                            <option value="scheduled">Programmée</option>
+                            <option value="published">Publiée</option>
+                            <option value="failed">Échec</option>
+                        </select>
+                        <input type="date" class="form-input" style="width: auto;" id="videoDateFilter">
+                    </div>
+
+                    <div class="table-container">
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th><input type="checkbox" id="selectAllVideos"></th>
+                                    <th>Aperçu</th>
+                                    <th>Titre</th>
+                                    <th>Plateformes</th>
+                                    <th>Statut</th>
+                                    <th>Vues</th>
+                                    <th>Programmé</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td><input type="checkbox" class="video-checkbox"></td>
+                                    <td><div style="width: 60px; height: 40px; background: linear-gradient(45deg, #ff6b6b, #4ecdc4); border-radius: 5px; display: flex; align-items: center; justify-content: center; color: white; font-size: 0.8rem;">📹</div></td>
+                                    <td>Tutoriel BatMarket - Comment gagner des BAT</td>
+                                    <td><span class="platform-badge tiktok">TikTok</span> <span class="platform-badge youtube">YouTube</span></td>
+                                    <td><span class="status-badge status-verified">Publiée</span></td>
+                                    <td>12.5K / 8.7K</td>
+                                    <td>-</td>
+                                    <td>
+                                        <button class="btn btn-primary btn-small" onclick="viewVideo('vid1')">👁️</button>
+                                        <button class="btn btn-warning btn-small" onclick="editVideo('vid1')">✏️</button>
+                                        <button class="btn btn-success btn-small" onclick="shareVideo('vid1')">📤</button>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td><input type="checkbox" class="video-checkbox"></td>
+                                    <td><div style="width: 60px; height: 40px; background: linear-gradient(45deg, #a8e6cf, #88d8c0); border-radius: 5px; display: flex; align-items: center; justify-content: center; color: white; font-size: 0.8rem;">🎥</div></td>
+                                    <td>Présentation système de parrainage</td>
+                                    <td><span class="platform-badge tiktok">TikTok</span></td>
+                                    <td><span class="status-badge status-pending">Programmée</span></td>
+                                    <td>-</td>
+                                    <td>Demain 15:00</td>
+                                    <td>
+                                        <button class="btn btn-primary btn-small" onclick="viewVideo('vid2')">👁️</button>
+                                        <button class="btn btn-warning btn-small" onclick="editVideo('vid2')">✏️</button>
+                                        <button class="btn btn-danger btn-small" onclick="cancelSchedule('vid2')">❌</button>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td><input type="checkbox" class="video-checkbox"></td>
+                                    <td><div style="width: 60px; height: 40px; background: linear-gradient(45deg, #ffd93d, #ff6b6b); border-radius: 5px; display: flex; align-items: center; justify-content: center; color: white; font-size: 0.8rem;">📱</div></td>
+                                    <td>Top 5 produits BatMarket</td>
+                                    <td><span class="platform-badge youtube">YouTube</span></td>
+                                    <td><span class="status-badge" style="background: #95a5a6; color: white;">Brouillon</span></td>
+                                    <td>-</td>
+                                    <td>-</td>
+                                    <td>
+                                        <button class="btn btn-primary btn-small" onclick="viewVideo('vid3')">👁️</button>
+                                        <button class="btn btn-warning btn-small" onclick="editVideo('vid3')">✏️</button>
+                                        <button class="btn btn-success btn-small" onclick="publishVideo('vid3')">🚀</button>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <h3>Statistiques de Performance</h3>
+                    <div class="stats-grid" style="grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));">
+                        <div class="stat-card">
+                            <div class="stat-icon">👥</div>
+                            <div class="stat-number">2.1M</div>
+                            <div class="stat-label">Vues Totales</div>
+                        </div>
+                        <div class="stat-card revenue-card">
+                            <div class="stat-icon">❤️</div>
+                            <div class="stat-number">156K</div>
+                            <div class="stat-label">Likes Totaux</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-icon">👥</div>
+                            <div class="stat-number">45K</div>
+                            <div class="stat-label">Abonnés TikTok</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-icon">📺</div>
+                            <div class="stat-number">23K</div>
+                            <div class="stat-label">Abonnés YouTube</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Settings Section -->
+                <div id="settings" class="content-section">
+                    <h1>⚙️ Configuration Système</h1>
+                    <p style="margin-bottom: 2rem; color: #666;">Paramètres généraux de la plateforme</p>
+
+                    <div class="form-section">
+                        <h3>🌐 Paramètres Généraux</h3>
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem;">
+                            <div>
+                                <div class="form-group">
+                                    <label class="form-label">Nom de la plateforme</label>
+                                    <input type="text" class="form-input" value="BatMarket" id="platformName">
+                                </div>
+                                <div class="form-group">
+                                    <label class="form-label">Email de contact</label>
+                                    <input type="email" class="form-input" value="contact@batmarket.com" id="contactEmail">
+                                </div>
+                                <div class="form-group">
+                                    <label class="form-label">Devise principale</label>
+                                    <select class="form-select" id="mainCurrency">
+                                        <option value="XOF" selected>XOF (Franc CFA)</option>
+                                        <option value="EUR">EUR (Euro)</option>
+                                        <option value="USD">USD (Dollar)</option>
+                                    </select>
+                                </div>
+                                <div class="form-group">
+                                    <label class="form-label">Fuseau horaire</label>
+                                    <select class="form-select" id="timezone">
+                                        <option value="Africa/Abidjan" selected>Africa/Abidjan (GMT)</option>
+                                        <option value="Africa/Dakar">Africa/Dakar (GMT)</option>
+                                        <option value="Europe/Paris">Europe/Paris (GMT+1)</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div>
+                                <div class="form-group">
+                                    <label class="form-label">Commission plateforme (%)</label>
+                                    <input type="number" class="form-input" value="5" step="0.1" id="platformCommission">
+                                </div>
+                                <div class="form-group">
+                                    <label class="form-label">Inscription nécessite validation</label>
+                                    <select class="form-select" id="requireValidation">
+                                        <option value="false">Non - Activation automatique</option>
+                                        <option value="true" selected>Oui - Validation manuelle</option>
+                                    </select>
+                                </div>
+                                <div class="form-group">
+                                    <label class="form-label">Mode maintenance</label>
+                                    <select class="form-select" id="maintenanceMode">
+                                        <option value="false" selected>Désactivé</option>
+                                        <option value="true">Activé</option>
+                                    </select>
+                                </div>
+                                <div class="form-group">
+                                    <label class="form-label">Limite upload (MB)</label>
+                                    <input type="number" class="form-input" value="10" id="uploadLimit">
+                                </div>
+                            </div>
+                        </div>
+                        <button class="btn btn-primary" onclick="saveGeneralSettings()">💾 Sauvegarder</button>
+                        <div id="generalSettingsSuccess" class="success-message">Paramètres sauvegardés !</div>
+                    </div>
+
+                    <div class="form-section">
+                        <h3>📧 Configuration Email</h3>
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem;">
+                            <div>
+                                <div class="form-group">
+                                    <label class="form-label">Serveur SMTP</label>
+                                    <input type="text" class="form-input" placeholder="smtp.gmail.com" id="smtpServer">
+                                </div>
+                                <div class="form-group">
+                                    <label class="form-label">Port SMTP</label>
+                                    <input type="number" class="form-input" value="587" id="smtpPort">
+                                </div>
+                                <div class="form-group">
+                                    <label class="form-label">Nom expéditeur</label>
+                                    <input type="text" class="form-input" value="BatMarket Team" id="senderName">
+                                </div>
+                            </div>
+                            <div>
+                                <div class="form-group">
+                                    <label class="form-label">Email expéditeur</label>
+                                    <input type="email" class="form-input" placeholder="noreply@batmarket.com" id="senderEmail">
+                                </div>
+                                <div class="form-group">
+                                    <label class="form-label">Mot de passe SMTP</label>
+                                    <input type="password" class="form-input" placeholder="••••••••" id="smtpPassword">
+                                </div>
+                                <div class="form-group">
+                                    <label class="form-label">Chiffrement</label>
+                                    <select class="form-select" id="smtpEncryption">
+                                        <option value="tls" selected>TLS</option>
+                                        <option value="ssl">SSL</option>
+                                        <option value="none">Aucun</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                        <div style="display: flex; gap: 1rem;">
+                            <button class="btn btn-primary" onclick="saveEmailSettings()">💾 Sauvegarder</button>
+                            <button class="btn btn-warning" onclick="testEmail()">📧 Tester Email</button>
+                        </div>
+                        <div id="emailSettingsSuccess" class="success-message">Configuration email sauvegardée !</div>
+                        <div id="emailTestResult" class="success-message">Email de test envoyé avec succès !</div>
+                    </div>
+
+                    <div class="form-section">
+                        <h3>🔐 Sécurité</h3>
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem;">
+                            <div>
+                                <div class="form-group">
+                                    <label class="form-label">Authentification 2FA obligatoire</label>
+                                    <select class="form-select" id="require2FA">
+                                        <option value="false" selected>Optionnelle</option>
+                                        <option value="true">Obligatoire</option>
+                                    </select>
+                                </div>
+                                <div class="form-group">
+                                    <label class="form-label">Durée session (minutes)</label>
+                                    <input type="number" class="form-input" value="120" id="sessionDuration">
+                                </div>
+                                <div class="form-group">
+                                    <label class="form-label">Tentatives connexion max</label>
+                                    <input type="number" class="form-input" value="5" id="maxLoginAttempts">
+                                </div>
+                            </div>
+                            <div>
+                                <div class="form-group">
+                                    <label class="form-label">Blocage temporaire (minutes)</label>
+                                    <input type="number" class="form-input" value="30" id="lockoutDuration">
+                                </div>
+                                <div class="form-group">
+                                    <label class="form-label">Force HTTPS</label>
+                                    <select class="form-select" id="forceHTTPS">
+                                        <option value="true" selected>Activé</option>
+                                        <option value="false">Désactivé</option>
+                                    </select>
+                                </div>
+                                <div class="form-group">
+                                    <label class="form-label">Logs de sécurité</label>
+                                    <select class="form-select" id="securityLogs">
+                                        <option value="true" selected>Activé</option>
+                                        <option value="false">Désactivé</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                        <button class="btn btn-danger" onclick="saveSecuritySettings()">🔐 Sauvegarder</button>
+                        <div id="securitySettingsSuccess" class="success-message">Paramètres de sécurité sauvegardés !</div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <!-- Modals -->
+    <div id="addUserModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title">➕ Ajouter Nouvel Utilisateur</h2>
+                <button class="close" onclick="closeModal('addUserModal')">&times;</button>
+            </div>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                <div class="form-group">
+                    <label class="form-label">Prénom</label>
+                    <input type="text" class="form-input" id="newUserFirstName">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Nom</label>
+                    <input type="text" class="form-input" id="newUserLastName">
+                </div>
+            </div>
+            <div class="form-group">
+                <label class="form-label">Email</label>
+                <input type="email" class="form-input" id="newUserEmail">
+            </div>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                <div class="form-group">
+                    <label class="form-label">Téléphone</label>
+                    <input type="tel" class="form-input" id="newUserPhone">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Rôle</label>
+                    <select class="form-select" id="newUserRole">
+                        <option value="user">Utilisateur</option>
+                        <option value="seller">Vendeur</option>
+                        <option value="admin">Administrateur</option>
+                    </select>
+                </div>
+            </div>
+            <div class="form-group">
+                <label class="form-label">BAT initial (optionnel)</label>
+                <input type="number" class="form-input" placeholder="0" id="newUserBAT">
+            </div>
+            <div style="display: flex; gap: 1rem; justify-content: flex-end;">
+                <button class="btn" style="background: #ccc;" onclick="closeModal('addUserModal')">Annuler</button>
+                <button class="btn btn-primary" onclick="createUser()">Créer Utilisateur</button>
+            </div>
+            <div id="createUserSuccess" class="success-message">Utilisateur créé avec succès !</div>
+        </div>
+    </div>
+
+    <!-- Add Product Modal -->
+    <div id="addProductModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title">🛍️ Ajouter Nouveau Produit</h2>
+                <button class="close" onclick="closeModal('addProductModal')">&times;</button>
+            </div>
+            <div class="form-group">
+                <label class="form-label">Nom du produit</label>
+                <input type="text" class="form-input" id="productName" placeholder="Ex: Smartphone Galaxy Pro">
+            </div>
+            <div class="video-grid">
+                <div class="form-group">
+                    <label class="form-label">Catégorie</label>
+                    <select class="form-select" id="productCategory">
+                        <option value="">Sélectionner une catégorie</option>
+                        <option value="electronics">Électronique</option>
+                        <option value="fashion">Mode</option>
+                        <option value="home">Maison & Jardin</option>
+                        <option value="services">Services</option>
+                        <option value="food">Alimentation</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Prix (XOF)</label>
+                    <input type="number" class="form-input" id="productPrice" placeholder="50000">
+                </div>
+            </div>
+            <div class="video-grid">
+                <div class="form-group">
+                    <label class="form-label">Stock</label>
+                    <input type="number" class="form-input" id="productStock" placeholder="10">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Vendeur</label>
+                    <select class="form-select" id="productSeller">
+                        <option value="">Sélectionner un vendeur</option>
+                        <option value="techstore">TechStore</option>
+                        <option value="afrimode">AfriMode</option>
+                        <option value="edumarket">EduMarket</option>
+                    </select>
+                </div>
+            </div>
+            <div class="form-group">
+                <label class="form-label">Description</label>
+                <textarea class="form-textarea" id="productDescription" placeholder="Description détaillée du produit..."></textarea>
+            </div>
+            <div class="form-group">
+                <label class="form-label">Images du produit</label>
+                <input type="file" class="form-input" multiple accept="image/*" id="productImages">
+            </div>
+            <div style="display: flex; gap: 1rem; justify-content: flex-end;">
+                <button class="btn" style="background: #ccc;" onclick="closeModal('addProductModal')">Annuler</button>
+                <button class="btn btn-primary" onclick="createProduct()">Créer Produit</button>
+            </div>
+            <div id="createProductSuccess" class="success-message">Produit créé avec succès !</div>
+        </div>
+    </div>
+
+    <!-- Add Video Modal -->
+    <div id="addVideoModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title">🎬 Ajouter Nouvelle Vidéo</h2>
+                <button class="close" onclick="closeModal('addVideoModal')">&times;</button>
+            </div>
+            <div class="form-group">
+                <label class="form-label">Titre de la vidéo</label>
+                <input type="text" class="form-input" id="videoTitle" placeholder="Ex: Tutoriel BatMarket - Comment gagner des BAT">
+            </div>
+            <div class="form-group">
+                <label class="form-label">Description</label>
+                <textarea class="form-textarea" id="videoDescription" placeholder="Description de la vidéo pour TikTok et YouTube..."></textarea>
+            </div>
+            <div class="video-grid">
+                <div class="form-group">
+                    <label class="form-label">Fichier vidéo</label>
+                    <input type="file" class="form-input" accept="video/*" id="videoFile">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Miniature</label>
+                    <input type="file" class="form-input" accept="image/*" id="videoThumbnail">
+                </div>
+            </div>
+            <div class="form-group">
+                <label class="form-label">Plateformes cibles</label>
+                <div style="display: flex; gap: 1rem; margin-top: 0.5rem;">
+                    <label style="display: flex; align-items: center; gap: 0.5rem; font-weight: normal;">
+                        <input type="checkbox" id="publishTikTok" checked> 
+                        <span class="platform-badge tiktok">TikTok</span>
+                    </label>
+                    <label style="display: flex; align-items: center; gap: 0.5rem; font-weight: normal;">
+                        <input type="checkbox" id="publishYouTube"> 
+                        <span class="platform-badge youtube">YouTube</span>
+                    </label>
+                </div>
+            </div>
+            <div class="video-grid">
+                <div class="form-group">
+                    <label class="form-label">Publication</label>
+                    <select class="form-select" id="publishType">
+                        <option value="now">Publier maintenant</option>
+                        <option value="schedule">Programmer</option>
+                        <option value="draft">Sauvegarder en brouillon</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Date de programmation</label>
+                    <input type="datetime-local" class="form-input" id="scheduleDate" disabled>
+                </div>
+            </div>
+            <div class="form-group">
+                <label class="form-label">Hashtags</label>
+                <input type="text" class="form-input" id="videoHashtags" placeholder="#batmarket #tuto #gagnerargent">
+                <small style="color: #666;">Séparez les hashtags par des espaces</small>
+            </div>
+            <div style="display: flex; gap: 1rem; justify-content: flex-end;">
+                <button class="btn" style="background: #ccc;" onclick="closeModal('addVideoModal')">Annuler</button>
+                <button class="btn btn-primary" onclick="createVideo()">Créer Vidéo</button>
+            </div>
+            <div id="createVideoSuccess" class="success-message">Vidéo créée avec succès !</div>
+        </div>
+    </div>
+
+    <!-- Category Management Modal -->
+    <div id="categoryModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title">🏷️ Gestion des Catégories</h2>
+                <button class="close" onclick="closeModal('categoryModal')">&times;</button>
+            </div>
+            <div class="form-group">
+                <label class="form-label">Nouvelle catégorie</label>
+                <div style="display: flex; gap: 0.5rem;">
+                    <input type="text" class="form-input" id="newCategoryName" placeholder="Nom de la catégorie">
+                    <button class="btn btn-primary" onclick="addCategory()">Ajouter</button>
+                </div>
+            </div>
+            <h4>Catégories existantes</h4>
+            <div class="table-container">
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Nom</th>
+                            <th>Produits</th>
+                            <th>Statut</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Électronique</td>
+                            <td>245</td>
+                            <td><span class="status-badge status-active">Actif</span></td>
+                            <td>
+                                <button class="btn btn-warning btn-small">✏️</button>
+                                <button class="btn btn-danger btn-small">🗑️</button>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>Mode</td>
+                            <td>189</td>
+                            <td><span class="status-badge status-active">Actif</span></td>
+                            <td>
+                                <button class="btn btn-warning btn-small">✏️</button>
+                                <button class="btn btn-danger btn-small">🗑️</button>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            <div style="display: flex; justify-content: flex-end; margin-top: 1rem;">
+                <button class="btn btn-primary" onclick="closeModal('categoryModal')">Fermer</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let currentSection = 'overview';
+        let sidebarOpen = false;
+
+        // Mobile Sidebar Management
+        function toggleSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            const overlay = document.querySelector('.sidebar-overlay');
+            
+            if (sidebarOpen) {
+                closeSidebar();
+            } else {
+                openSidebar();
+            }
+        }
+        
+        function openSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            const overlay = document.querySelector('.sidebar-overlay');
+            
+            sidebar.classList.add('mobile-visible');
+            overlay.classList.add('active');
+            sidebarOpen = true;
+            
+            // Prevent body scroll when sidebar is open
+            document.body.style.overflow = 'hidden';
+        }
+        
+        function closeSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            const overlay = document.querySelector('.sidebar-overlay');
+            
+            sidebar.classList.remove('mobile-visible');
+            overlay.classList.remove('active');
+            sidebarOpen = false;
+            
+            // Restore body scroll
+            document.body.style.overflow = '';
+        }
+
+        // Navigation
+        function showSection(sectionName) {
+            // Hide all sections
+            const sections = document.querySelectorAll('.content-section');
+            sections.forEach(section => {
+                section.classList.remove('active');
+            });
+
+            // Remove active class from all nav items
+            const navItems = document.querySelectorAll('.nav-item');
+            navItems.forEach(item => {
+                item.classList.remove('active');
+            });
+
+            // Show selected section
+            document.getElementById(sectionName).classList.add('active');
+            
+            // Add active class to clicked nav item
+            event.target.classList.add('active');
+            
+            currentSection = sectionName;
+
+            // Update page title
+            document.title = `BatMarket Admin - ${getSectionTitle(sectionName)}`;
+            
+            // Close mobile sidebar after navigation
+            if (window.innerWidth <= 768) {
+                closeSidebar();
+            }
+        }
+
+        function getSectionTitle(section) {
+            const titles = {
+                'overview': 'Vue d\'ensemble',
+                'users': 'Gestion Utilisateurs',
+                'referrals': 'Arbre Parrainages',
+                'bat-system': 'Système BAT',
+                'products': 'Produits & Marketplace',
+                'transactions': 'Transactions',
+                'reports': 'Rapports',
+                'settings': 'Configuration',
+                'support': 'Support'
+            };
+            return titles[section] || 'Administration';
+        }
+
+        // User Management
+        function filterUsers() {
+            const search = document.getElementById('userSearch').value.toLowerCase();
+            const statusFilter = document.getElementById('statusFilter').value;
+            const roleFilter = document.getElementById('roleFilter').value;
+            
+            const rows = document.querySelectorAll('#usersTable tbody tr');
+            
+            rows.forEach(row => {
+                const name = row.cells[2].textContent.toLowerCase();
+                const email = row.cells[3].textContent.toLowerCase();
+                const status = row.cells[7].textContent.toLowerCase();
+                
+                const matchesSearch = name.includes(search) || email.includes(search);
+                const matchesStatus = !statusFilter || status.includes(statusFilter);
+                
+                if (matchesSearch && matchesStatus) {
+                    row.style.display = '';
+                } else {
+                    row.style.display = 'none';
+                }
+            });
+        }
+
+        function resetFilters() {
+            document.getElementById('userSearch').value = '';
+            document.getElementById('statusFilter').value = '';
+            document.getElementById('roleFilter').value = '';
+            filterUsers();
+        }
+
+        function toggleSelectAll() {
+            const selectAll = document.getElementById('selectAll').checked;
+            const checkboxes = document.querySelectorAll('.user-checkbox');
+            checkboxes.forEach(cb => cb.checked = selectAll);
+        }
+
+        function viewUser(userId) {
+            alert(`Voir détails utilisateur ID: ${userId}`);
+        }
+
+        function editUser(userId) {
+            alert(`Modifier utilisateur ID: ${userId}`);
+        }
+
+        function blockUser(userId) {
+            if (confirm('Êtes-vous sûr de vouloir bloquer cet utilisateur ?')) {
+                showSuccess('User bloqué avec succès !');
+            }
+        }
+
+        function activateUser(userId) {
+            if (confirm('Activer cet utilisateur ?')) {
+                showSuccess('User activé avec succès !');
+            }
+        }
+
+        function unblockUser(userId) {
+            if (confirm('Débloquer cet utilisateur ?')) {
+                showSuccess('User débloqué avec succès !');
+            }
+        }
+
+        function bulkBlock() {
+            const selected = document.querySelectorAll('.user-checkbox:checked');
+            if (selected.length === 0) {
+                alert('Veuillez sélectionner au moins un utilisateur');
+                return;
+            }
+            if (confirm(`Bloquer ${selected.length} utilisateur(s) ?`)) {
+                showSuccess(`${selected.length} utilisateur(s) bloqué(s) !`);
+            }
+        }
+
+        function bulkActivate() {
+            const selected = document.querySelectorAll('.user-checkbox:checked');
+            if (selected.length === 0) {
+                alert('Veuillez sélectionner au moins un utilisateur');
+                return;
+            }
+            if (confirm(`Activer ${selected.length} utilisateur(s) ?`)) {
+                showSuccess(`${selected.length} utilisateur(s) activé(s) !`);
+            }
+        }
+
+        function bulkDelete() {
+            const selected = document.querySelectorAll('.user-checkbox:checked');
+            if (selected.length === 0) {
+                alert('Veuillez sélectionner au moins un utilisateur');
+                return;
+            }
+            if (confirm(`ATTENTION: Supprimer définitivement ${selected.length} utilisateur(s) ? Cette action est irréversible !`)) {
+                showSuccess(`${selected.length} utilisateur(s) supprimé(s) !`);
+            }
+        }
+
+        function exportUsers() {
+            showSuccess('Export des utilisateurs en cours... Le fichier sera téléchargé prochainement.');
+        }
+
+        function bulkEmail() {
+            const selected = document.querySelectorAll('.user-checkbox:checked');
+            if (selected.length === 0) {
+                alert('Veuillez sélectionner au moins un utilisateur');
+                return;
+            }
+            const message = prompt(`Envoyer un email à ${selected.length} utilisateur(s). Message:`);
+            if (message) {
+                showSuccess(`Email envoyé à ${selected.length} utilisateur(s) !`);
+            }
+        }
+
+        // Tree Management
+        function showUserDetails(userId) {
+            const users = {
+                'alex': 'Alexandre Dupont\n- 45 filleuls directs\n- Top performer depuis 6 mois\n- 5,240 BAT gagnés\n- Dernière activité: Aujourd\'hui',
+                'sarah': 'Sarah Koné\n- 38 filleuls directs\n- VIP membre\n- 4,680 BAT gagnés\n- Dernière activité: Il y a 2h',
+                'marie': 'Marie Koné\n- 15 filleuls directs\n- Membre actif\n- 3,120 BAT gagnés\n- Dernière activité: Il y a 1h',
+                'paul': 'Paul Martin\n- 12 filleuls directs\n- Bon performeur\n- 2,890 BAT gagnés\n- Dernière activité: Il y a 30min',
+                'sophie': 'Sophie Laurent\n- 8 filleuls directs\n- Membre régulier\n- 1,456 BAT gagnés\n- Dernière activité: Il y a 2h',
+                'john': 'John Doe\n- 10 filleuls directs\n- Nouveau talent\n- 2,450 BAT gagnés\n- Dernière activité: Il y a 5min',
+                'thomas': 'Thomas Robert\n- 3 filleuls directs\n- Inactif depuis 30 jours\n- 678 BAT gagnés\n- Dernière activité: Il y a 30 jours'
+            };
+            
+            alert(users[userId] || 'Détails non disponibles');
+        }
+
+        function expandAll() {
+            showSuccess('Arbre complètement développé !');
+        }
+
+        function collapseAll() {
+            showSuccess('Arbre réduit !');
+        }
+
+        // BAT System Management
+        function updateBATConfig() {
+            const rate = document.getElementById('conversionRate').value;
+            const directReward = document.getElementById('directReferralReward').value;
+            const level2Bonus = document.getElementById('level2Bonus').value;
+            const level3Bonus = document.getElementById('level3Bonus').value;
+
+            if (!rate || !directReward || !level2Bonus || !level3Bonus) {
+                showError('Veuillez remplir tous les champs');
+                return;
+            }
+
+            // Simulate config update
+            setTimeout(() => {
+                showSuccess('batConfigSuccess', 'Configuration BAT mise à jour avec succès !');
+            }, 1000);
+        }
+
+        function distributeBAT() {
+            const userId = document.getElementById('rewardUserId').value.trim();
+            const amount = document.getElementById('rewardAmount').value;
+            const reason = document.getElementById('rewardReason').value;
+
+            if (!userId || !amount || amount <= 0) {
+                showError('rewardError', 'Veuillez remplir tous les champs obligatoires');
+                return;
+            }
+
+            // Simulate distribution
+            setTimeout(() => {
+                showSuccess('rewardSuccess', `${amount} BAT distribués avec succès à ${userId} !`);
+                
+                // Clear form
+                document.getElementById('rewardUserId').value = '';
+                document.getElementById('rewardAmount').value = '';
+                document.getElementById('rewardNote').value = '';
+            }, 1000);
+        }
+
+        // Product Management
+        function exportProducts() {
+            showSuccess('Export des produits en cours...');
+        }
+
+        function bulkProductAction() {
+            const selected = document.querySelectorAll('.product-checkbox:checked');
+            if (selected.length === 0) {
+                alert('Veuillez sélectionner au moins un produit');
+                return;
+            }
+            
+            const action = prompt('Action (suspend/activate/delete):');
+            if (action) {
+                showSuccess(`Action "${action}" appliquée à ${selected.length} produit(s) !`);
+            }
+        }
+
+        // Settings Management
+        function saveGeneralSettings() {
+            setTimeout(() => {
+                showSuccess('generalSettingsSuccess', 'Paramètres généraux sauvegardés avec succès !');
+            }, 1000);
+        }
+
+        function saveEmailSettings() {
+            setTimeout(() => {
+                showSuccess('emailSettingsSuccess', 'Configuration email sauvegardée avec succès !');
+            }, 1000);
+        }
+
+        function testEmail() {
+            const email = prompt('Entrez une adresse email pour le test:');
+            if (email && email.includes('@')) {
+                setTimeout(() => {
+                    showSuccess('emailTestResult', `Email de test envoyé à ${email} avec succès !`);
+                }, 2000);
+            }
+        }
+
+        function saveSecuritySettings() {
+            setTimeout(() => {
+                showSuccess('securitySettingsSuccess', 'Paramètres de sécurité sauvegardés avec succès !');
+            }, 1000);
+        }
+
+        // Modal Management
+        function openModal(modalId) {
+            document.getElementById(modalId).style.display = 'block';
+        }
+
+        function closeModal(modalId) {
+            document.getElementById(modalId).style.display = 'none';
+        }
+
+        function createUser() {
+            const firstName = document.getElementById('newUserFirstName').value.trim();
+            const lastName = document.getElementById('newUserLastName').value.trim();
+            const email = document.getElementById('newUserEmail').value.trim();
+
+            if (!firstName || !lastName || !email) {
+                alert('Veuillez remplir tous les champs obligatoires');
+                return;
+            }
+
+            setTimeout(() => {
+                showSuccess('createUserSuccess', 'Utilisateur créé avec succès !');
+                
+                // Clear form
+                document.getElementById('newUserFirstName').value = '';
+                document.getElementById('newUserLastName').value = '';
+                document.getElementById('newUserEmail').value = '';
+                document.getElementById('newUserPhone').value = '';
+                document.getElementById('newUserBAT').value = '';
+                
+                // Close modal after success
+                setTimeout(() => {
+                    closeModal('addUserModal');
+                }, 2000);
+            }, 1000);
+        }
+
+        // Utility Functions
+        function showSuccess(elementId, message) {
+            const element = typeof elementId === 'string' ? document.getElementById(elementId) : null;
+            if (element) {
+                element.textContent = message || elementId;
+                element.style.display = 'block';
+                setTimeout(() => {
+                    element.style.display = 'none';
+                }, 3000);
+            } else {
+                // Show generic success message
+                alert(message || elementId);
+            }
+        }
+
+        function showError(elementId, message) {
+            const element = typeof elementId === 'string' ? document.getElementById(elementId) : null;
+            if (element) {
+                element.textContent = message || elementId;
+                element.style.display = 'block';
+                setTimeout(() => {
+                    element.style.display = 'none';
+                }, 3000);
+            } else {
+                alert(message || elementId);
+            }
+        }
+
+        function logout() {
+            if (confirm('Êtes-vous sûr de vouloir vous déconnecter de l\'administration ?')) {
+                alert('Déconnexion réussie ! Redirection vers la page de connexion...');
+                // In a real app, this would redirect to the login page
+            }
+        }
+
+        function changePage(page) {
+            // Update pagination
+            const buttons = document.querySelectorAll('.pagination button');
+            buttons.forEach(btn => btn.classList.remove('active'));
+            event.target.classList.add('active');
+            
+            showSuccess(`Page ${page} chargée`);
+        }
+
+        // Real-time updates simulation
+        function simulateRealTimeUpdates() {
+            setInterval(() => {
+                // Randomly update some stats
+                if (Math.random() > 0.9) { // 10% chance
+                    const statElements = [
+                        { id: 'totalUsers', increment: Math.floor(Math.random() * 3) + 1 },
+                        { id: 'newUsers', increment: Math.floor(Math.random() * 2) + 1 },
+                        { id: 'totalBAT', increment: Math.floor(Math.random() * 100) + 50 },
+                        { id: 'totalReferrals', increment: Math.floor(Math.random() * 5) + 1 }
+                    ];
+
+                    statElements.forEach(stat => {
+                        const element = document.getElementById(stat.id);
+                        if (element && Math.random() > 0.7) {
+                            const current = parseInt(element.textContent.replace(/,/g, ''));
+                            const newValue = current + stat.increment;
+                            element.textContent = newValue.toLocaleString();
+                        }
+                    });
+                }
+            }, 15000); // Update every 15 seconds
+        }
+
+        // Initialize when DOM is loaded
+        document.addEventListener('DOMContentLoaded', function() {
+            // Start real-time updates
+            simulateRealTimeUpdates();
+
+            // Close modals when clicking outside
+            window.addEventListener('click', function(event) {
+                const modals = document.querySelectorAll('.modal');
+                modals.forEach(modal => {
+                    if (event.target === modal) {
+                        modal.style.display = 'none';
+                    }
+                });
+            });
+
+            // Add smooth scrolling for navigation
+            const navItems = document.querySelectorAll('.nav-item');
+            navItems.forEach(item => {
+                item.addEventListener('click', function() {
+                    // Smooth scroll to top of main content
+                    document.querySelector('.main-content').scrollTop = 0;
+                });
+            });
+
+            console.log('⚡ BatMarket Admin Panel loaded successfully!');
+        });
+
+        // Handle responsive navigation on mobile
+        window.addEventListener('resize', function() {
+            // Close sidebar when resizing to desktop
+            if (window.innerWidth > 768 && sidebarOpen) {
+                closeSidebar();
+            }
+            
+            // Adjust layout based on screen size
+            adjustLayout();
+        });
+        
+        function adjustLayout() {
+            const sidebar = document.getElementById('sidebar');
+            const mainContent = document.querySelector('.main-content');
+            
+            if (window.innerWidth <= 480) {
+                // Extra small screens
+                sidebar.style.width = '100%';
+            } else if (window.innerWidth <= 768) {
+                // Mobile
+                sidebar.style.width = '280px';
+            } else if (window.innerWidth <= 992) {
+                // Tablet
+                sidebar.style.width = '220px';
+                mainContent.style.marginLeft = '240px';
+            } else if (window.innerWidth <= 1200) {
+                // Small desktop
+                sidebar.style.width = '240px';
+                mainContent.style.marginLeft = '260px';
+            } else {
+                // Large desktop
+                sidebar.style.width = '260px';
+                mainContent.style.marginLeft = '300px';
+            }
+        }
+
+        // Keyboard shortcuts
+        document.addEventListener('keydown', function(event) {
+            // Ctrl/Cmd + K to focus search
+            if ((event.ctrlKey || event.metaKey) && event.key === 'k') {
+                event.preventDefault();
+                const searchBox = document.querySelector('.search-box');
+                if (searchBox) {
+                    searchBox.focus();
+                }
+            }
+            
+            // Escape to close modals
+            if (event.key === 'Escape') {
+                const modals = document.querySelectorAll('.modal');
+                modals.forEach(modal => {
+                    if (modal.style.display === 'block') {
+                        modal.style.display = 'none';
+                    }
+                });
+            }
+        });
+    </script>
+</body>
+</html>

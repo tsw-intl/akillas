@@ -1,0 +1,1849 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BatMarket - Dashboard Utilisateur</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            line-height: 1.6;
+        }
+
+        /* Header */
+        .header {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(15px);
+            padding: 1rem 2rem;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+            margin-bottom: 2rem;
+        }
+
+        .header-content {
+            max-width: 1400px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 1.8rem;
+            font-weight: bold;
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .user-avatar {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 1.2rem;
+            font-weight: bold;
+        }
+
+        .user-details h3 {
+            color: #333;
+            font-size: 1rem;
+        }
+
+        .user-details p {
+            color: #666;
+            font-size: 0.9rem;
+        }
+
+        .logout-btn {
+            padding: 8px 16px;
+            background: #ff4757;
+            color: white;
+            border: none;
+            border-radius: 20px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .logout-btn:hover {
+            background: #ff3742;
+            transform: translateY(-2px);
+        }
+
+        /* Main Container */
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 0 2rem;
+        }
+
+        /* Dashboard Grid */
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: 250px 1fr;
+            gap: 2rem;
+            margin-bottom: 2rem;
+        }
+
+        /* Sidebar */
+        .sidebar {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(15px);
+            border-radius: 20px;
+            padding: 2rem;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+            height: fit-content;
+            position: sticky;
+            top: 2rem;
+        }
+
+        .nav-item {
+            display: block;
+            padding: 1rem;
+            margin-bottom: 0.5rem;
+            border-radius: 10px;
+            text-decoration: none;
+            color: #666;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .nav-item:hover {
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            color: white;
+            transform: translateX(5px);
+        }
+
+        .nav-item.active {
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            color: white;
+        }
+
+        .nav-item i {
+            margin-right: 0.5rem;
+        }
+
+        /* Main Content */
+        .main-content {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(15px);
+            border-radius: 20px;
+            padding: 2rem;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+            min-height: 80vh;
+        }
+
+        .content-section {
+            display: none;
+            animation: fadeIn 0.5s ease-in;
+        }
+
+        .content-section.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Stats Cards */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .stat-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 2rem;
+            border-radius: 15px;
+            text-align: center;
+            transform: translateY(0);
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .stat-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+            transition: left 0.5s;
+        }
+
+        .stat-card:hover::before {
+            left: 100%;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.2);
+        }
+
+        .stat-icon {
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .stat-number {
+            font-size: 2rem;
+            font-weight: bold;
+            margin-bottom: 0.5rem;
+        }
+
+        .stat-label {
+            font-size: 0.9rem;
+            opacity: 0.9;
+        }
+
+        /* BAT Balance */
+        .bat-balance-card {
+            background: linear-gradient(135deg, #ffd700 0%, #ffed4e 100%);
+            color: #333;
+            text-align: center;
+            position: relative;
+        }
+
+        .bat-conversion {
+            font-size: 0.9rem;
+            margin-top: 0.5rem;
+            opacity: 0.8;
+        }
+
+        /* Referral Section */
+        .referral-section {
+            background: #f8f9ff;
+            padding: 2rem;
+            border-radius: 15px;
+            margin: 2rem 0;
+        }
+
+        .referral-code-container {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            margin: 1rem 0;
+        }
+
+        .referral-code {
+            background: white;
+            padding: 1rem;
+            border-radius: 10px;
+            border: 2px dashed #667eea;
+            font-size: 1.2rem;
+            font-weight: bold;
+            color: #667eea;
+            flex: 1;
+            text-align: center;
+        }
+
+        .copy-btn {
+            padding: 1rem;
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .copy-btn:hover {
+            transform: scale(1.05);
+        }
+
+        /* Genealogy Tree */
+        .tree-container {
+            background: #f8f9ff;
+            border-radius: 15px;
+            padding: 2rem;
+            margin: 2rem 0;
+            overflow: auto;
+            max-height: 600px;
+        }
+
+        .tree {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-width: 800px;
+        }
+
+        .tree-level {
+            display: flex;
+            justify-content: center;
+            gap: 2rem;
+            margin: 1rem 0;
+            flex-wrap: wrap;
+        }
+
+        .tree-node {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 1.5rem;
+            border-radius: 15px;
+            min-width: 180px;
+            text-align: center;
+            position: relative;
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .tree-node:hover {
+            transform: translateY(-3px) scale(1.05);
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.2);
+        }
+
+        .tree-node.user-node {
+            background: linear-gradient(135deg, #ffd700 0%, #ffed4e 100%);
+            color: #333;
+            border: 3px solid #667eea;
+        }
+
+        .tree-connector {
+            width: 2px;
+            height: 30px;
+            background: #667eea;
+            margin: 0 auto;
+        }
+
+        .node-name {
+            font-weight: bold;
+            font-size: 1rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .node-stats {
+            font-size: 0.8rem;
+            opacity: 0.9;
+        }
+
+        .node-rewards {
+            background: rgba(255, 255, 255, 0.2);
+            padding: 0.3rem 0.8rem;
+            border-radius: 20px;
+            margin-top: 0.5rem;
+            font-size: 0.8rem;
+        }
+
+        /* Forms */
+        .form-section {
+            background: #f8f9ff;
+            padding: 2rem;
+            border-radius: 15px;
+            margin: 2rem 0;
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .form-label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+            color: #333;
+        }
+
+        .form-input, .form-select, .form-textarea {
+            width: 100%;
+            padding: 12px 16px;
+            border: 2px solid #e1e8ed;
+            border-radius: 10px;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+            font-family: inherit;
+        }
+
+        .form-textarea {
+            resize: vertical;
+            min-height: 120px;
+        }
+
+        .form-input:focus, .form-select:focus, .form-textarea:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 10px;
+            font-size: 1rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-block;
+        }
+
+        .btn-primary {
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        .btn-success {
+            background: linear-gradient(45deg, #2ed573, #1e90ff);
+            color: white;
+        }
+
+        .btn-success:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(46, 213, 115, 0.3);
+        }
+
+        /* Tables */
+        .table-container {
+            overflow-x: auto;
+            border-radius: 15px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            margin: 2rem 0;
+        }
+
+        .table {
+            width: 100%;
+            border-collapse: collapse;
+            background: white;
+        }
+
+        .table th {
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            color: white;
+            padding: 1rem;
+            text-align: left;
+            font-weight: 500;
+        }
+
+        .table td {
+            padding: 1rem;
+            border-bottom: 1px solid #e1e8ed;
+        }
+
+        .table tr:hover {
+            background: #f8f9ff;
+        }
+
+        .status-badge {
+            padding: 0.3rem 0.8rem;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 500;
+        }
+
+        .status-active {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .status-pending {
+            background: #fff3cd;
+            color: #856404;
+        }
+
+        .status-completed {
+            background: #cce5ff;
+            color: #004085;
+        }
+
+        /* Product Management */
+        .product-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 1.5rem;
+            margin: 2rem 0;
+        }
+
+        .product-card {
+            background: white;
+            border-radius: 15px;
+            overflow: hidden;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s ease;
+        }
+
+        .product-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.15);
+        }
+
+        .product-image {
+            width: 100%;
+            height: 200px;
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 3rem;
+            position: relative;
+        }
+
+        .product-actions-overlay {
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+            display: flex;
+            gap: 0.5rem;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .product-card:hover .product-actions-overlay {
+            opacity: 1;
+        }
+
+        .action-btn {
+            width: 35px;
+            height: 35px;
+            border-radius: 50%;
+            border: none;
+            background: rgba(255, 255, 255, 0.9);
+            color: #667eea;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+        }
+
+        .action-btn:hover {
+            background: white;
+            transform: scale(1.1);
+        }
+
+        .product-info {
+            padding: 1.5rem;
+        }
+
+        .product-title {
+            font-size: 1.2rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            color: #333;
+        }
+
+        .product-price {
+            font-size: 1.4rem;
+            font-weight: bold;
+            color: #667eea;
+            margin-bottom: 1rem;
+        }
+
+        .product-stats {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.9rem;
+            color: #666;
+            margin-bottom: 1rem;
+        }
+
+        /* Notifications */
+        .notification-item {
+            background: white;
+            padding: 1rem;
+            border-radius: 10px;
+            margin-bottom: 1rem;
+            border-left: 4px solid #667eea;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s ease;
+        }
+
+        .notification-item:hover {
+            transform: translateX(5px);
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+        }
+
+        .notification-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 0.5rem;
+        }
+
+        .notification-title {
+            font-weight: 600;
+            color: #333;
+        }
+
+        .notification-time {
+            font-size: 0.8rem;
+            color: #666;
+        }
+
+        .notification-content {
+            color: #666;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .dashboard-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .sidebar {
+                position: static;
+                border-radius: 15px;
+                margin-bottom: 1rem;
+            }
+
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .tree {
+                min-width: auto;
+            }
+
+            .tree-level {
+                flex-direction: column;
+                align-items: center;
+            }
+
+            .header-content {
+                flex-direction: column;
+                gap: 1rem;
+            }
+
+            .referral-code-container {
+                flex-direction: column;
+            }
+        }
+
+        /* Loading States */
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #667eea;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* Success Messages */
+        .success-message {
+            background: #d4edda;
+            color: #155724;
+            padding: 1rem;
+            border-radius: 10px;
+            margin: 1rem 0;
+            display: none;
+        }
+
+        .error-message {
+            background: #f8d7da;
+            color: #721c24;
+            padding: 1rem;
+            border-radius: 10px;
+            margin: 1rem 0;
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <div class="header">
+        <div class="header-content">
+            <div class="logo">🦇 BatMarket</div>
+            <div class="user-info">
+                <div class="user-avatar">JD</div>
+                <div class="user-details">
+                    <h3>John Doe</h3>
+                    <p>Membre depuis Mars 2024</p>
+                </div>
+                <button class="logout-btn" onclick="logout()">Déconnexion</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="container">
+        <div class="dashboard-grid">
+            <!-- Sidebar -->
+            <div class="sidebar">
+                <nav>
+                    <a class="nav-item active" onclick="showSection('dashboard')">
+                        📊 Dashboard
+                    </a>
+                    <a class="nav-item" onclick="showSection('referrals')">
+                        🌳 Mes Parrainages
+                    </a>
+                    <a class="nav-item" onclick="showSection('bat-wallet')">
+                        🦇 Portefeuille BAT
+                    </a>
+                    <a class="nav-item" onclick="showSection('products')">
+                        🛍️ Mes Produits
+                    </a>
+                    <a class="nav-item" onclick="showSection('orders')">
+                        📦 Commandes
+                    </a>
+                    <a class="nav-item" onclick="showSection('sales')">
+                        💰 Ventes
+                    </a>
+                    <a class="nav-item" onclick="showSection('profile')">
+                        👤 Profil
+                    </a>
+                    <a class="nav-item" onclick="showSection('notifications')">
+                        🔔 Notifications
+                    </a>
+                </nav>
+            </div>
+
+            <!-- Main Content -->
+            <div class="main-content">
+                
+                <!-- Dashboard Section -->
+                <div id="dashboard" class="content-section active">
+                    <h1>Dashboard</h1>
+                    <p style="margin-bottom: 2rem; color: #666;">Bienvenue dans votre espace personnel !</p>
+                    
+                    <div class="stats-grid">
+                        <div class="stat-card bat-balance-card">
+                            <div class="stat-icon">🦇</div>
+                            <div class="stat-number" id="batBalance">2,450</div>
+                            <div class="stat-label">BAT disponibles</div>
+                            <div class="bat-conversion">≈ 49,000 XOF</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-icon">👥</div>
+                            <div class="stat-number" id="referralCount">12</div>
+                            <div class="stat-label">Parrainages Réussis</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-icon">🛍️</div>
+                            <div class="stat-number" id="productCount">5</div>
+                            <div class="stat-label">Produits Vendus</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-icon">📦</div>
+                            <div class="stat-number" id="orderCount">8</div>
+                            <div class="stat-label">Commandes</div>
+                        </div>
+                    </div>
+
+                    <div class="referral-section">
+                        <h3>🎯 Votre Code de Parrainage</h3>
+                        <p style="margin-bottom: 1rem; color: #666;">Partagez ce code pour gagner 200 BAT par nouveau client !</p>
+                        <div class="referral-code-container">
+                            <div class="referral-code" id="referralCode">BAT-USER-2024-XY7Z</div>
+                            <button class="copy-btn" onclick="copyReferralCode()">📋</button>
+                        </div>
+                        <p style="text-align: center; color: #666; font-size: 0.9rem;">
+                            Lien de parrainage: <strong>https://batmarket.com/ref/BAT-USER-2024-XY7Z</strong>
+                        </p>
+                    </div>
+
+                    <div class="table-container">
+                        <h3 style="margin-bottom: 1rem;">Activité Récente</h3>
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th>Type</th>
+                                    <th>Description</th>
+                                    <th>BAT</th>
+                                    <th>Date</th>
+                                    <th>Statut</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>Parrainage</td>
+                                    <td>Marie Koné s'est inscrite</td>
+                                    <td>+200 BAT</td>
+                                    <td>Aujourd'hui</td>
+                                    <td><span class="status-badge status-completed">Complété</span></td>
+                                </tr>
+                                <tr>
+                                    <td>Vente</td>
+                                    <td>Smartphone Galaxy</td>
+                                    <td>+150 BAT</td>
+                                    <td>Hier</td>
+                                    <td><span class="status-badge status-completed">Complété</span></td>
+                                </tr>
+                                <tr>
+                                    <td>Conversion</td>
+                                    <td>1000 BAT → 20,000 XOF</td>
+                                    <td>-1000 BAT</td>
+                                    <td>3 jours</td>
+                                    <td><span class="status-badge status-pending">En cours</span></td>
+                                </tr>
+                                <tr>
+                                    <td>Parrainage</td>
+                                    <td>Paul Martin s'est inscrit</td>
+                                    <td>+200 BAT</td>
+                                    <td>1 semaine</td>
+                                    <td><span class="status-badge status-completed">Complété</span></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Referrals Section -->
+                <div id="referrals" class="content-section">
+                    <h1>🌳 Mes Parrainages</h1>
+                    <p style="margin-bottom: 2rem; color: #666;">Votre arbre généalogique de parrainages</p>
+
+                    <div class="stats-grid" style="grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));">
+                        <div class="stat-card">
+                            <div class="stat-icon">🥇</div>
+                            <div class="stat-number">12</div>
+                            <div class="stat-label">Filleuls Directs</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-icon">🌟</div>
+                            <div class="stat-number">28</div>
+                            <div class="stat-label">Total Réseau</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-icon">💎</div>
+                            <div class="stat-number">2,400</div>
+                            <div class="stat-label">BAT Gagnés</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-icon">📈</div>
+                            <div class="stat-number">3</div>
+                            <div class="stat-label">Niveaux Actifs</div>
+                        </div>
+                    </div>
+
+                    <div class="tree-container">
+                        <h3 style="margin-bottom: 1rem;">Votre Arbre de Parrainage</h3>
+                        <div class="tree">
+                            <div class="tree-level">
+                                <div class="tree-node user-node">
+                                    <div class="node-name">Vous (John Doe)</div>
+                                    <div class="node-stats">12 filleuls directs</div>
+                                    <div class="node-rewards">2,400 BAT gagnés</div>
+                                </div>
+                            </div>
+                            <div class="tree-connector"></div>
+                            <div class="tree-level">
+                                <div class="tree-node" onclick="showUserDetails('marie')">
+                                    <div class="node-name">Marie K.</div>
+                                    <div class="node-stats">3 filleuls • Actif</div>
+                                    <div class="node-rewards">+200 BAT</div>
+                                </div>
+                                <div class="tree-node" onclick="showUserDetails('paul')">
+                                    <div class="node-name">Paul M.</div>
+                                    <div class="node-stats">2 filleuls • Actif</div>
+                                    <div class="node-rewards">+200 BAT</div>
+                                </div>
+                                <div class="tree-node" onclick="showUserDetails('sophie')">
+                                    <div class="node-name">Sophie L.</div>
+                                    <div class="node-stats">1 filleul • Actif</div>
+                                    <div class="node-rewards">+200 BAT</div>
+                                </div>
+                                <div class="tree-node" onclick="showUserDetails('ahmed')">
+                                    <div class="node-name">Ahmed B.</div>
+                                    <div class="node-stats">0 filleul • Nouveau</div>
+                                    <div class="node-rewards">+200 BAT</div>
+                                </div>
+                            </div>
+                            <div class="tree-connector"></div>
+                            <div class="tree-level">
+                                <div class="tree-node">
+                                    <div class="node-name">Lisa T.</div>
+                                    <div class="node-stats">Niveau 2 • Actif</div>
+                                    <div class="node-rewards">Bonus +50 BAT</div>
+                                </div>
+                                <div class="tree-node">
+                                    <div class="node-name">Marc R.</div>
+                                    <div class="node-stats">Niveau 2 • Actif</div>
+                                    <div class="node-rewards">Bonus +50 BAT</div>
+                                </div>
+                                <div class="tree-node">
+                                    <div class="node-name">Emma S.</div>
+                                    <div class="node-stats">Niveau 2 • Nouveau</div>
+                                    <div class="node-rewards">Bonus +50 BAT</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-section">
+                        <h3>📧 Inviter des Amis</h3>
+                        <div class="form-group">
+                            <label class="form-label">Emails (séparés par des virgules)</label>
+                            <textarea class="form-textarea" placeholder="ami1@email.com, ami2@email.com, ami3@email.com..." id="inviteEmails"></textarea>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Message personnalisé (optionnel)</label>
+                            <textarea class="form-textarea" placeholder="Salut ! Je t'invite à rejoindre BatMarket, une super marketplace..." id="inviteMessage"></textarea>
+                        </div>
+                        <button class="btn btn-primary" onclick="sendInvitations()">Envoyer les Invitations</button>
+                        <div id="inviteSuccess" class="success-message">Invitations envoyées avec succès !</div>
+                    </div>
+                </div>
+
+                <!-- BAT Wallet Section -->
+                <div id="bat-wallet" class="content-section">
+                    <h1>🦇 Portefeuille BAT</h1>
+                    <p style="margin-bottom: 2rem; color: #666;">Gérez vos pièces BAT et convertissez-les en XOF</p>
+
+                    <div class="stats-grid" style="grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));">
+                        <div class="stat-card bat-balance-card">
+                            <div class="stat-icon">💰</div>
+                            <div class="stat-number">2,450</div>
+                            <div class="stat-label">BAT Disponibles</div>
+                            <div class="bat-conversion">≈ 49,000 XOF</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-icon">📈</div>
+                            <div class="stat-number">5,890</div>
+                            <div class="stat-label">BAT Total Gagnés</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-icon">💸</div>
+                            <div class="stat-number">3,440</div>
+                            <div class="stat-label">BAT Convertis</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-icon">📊</div>
+                            <div class="stat-number">20</div>
+                            <div class="stat-label">XOF par BAT</div>
+                        </div>
+                    </div>
+
+                    <div class="form-section">
+                        <h3>💱 Convertir BAT en XOF</h3>
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                            <div class="form-group">
+                                <label class="form-label">Montant BAT à convertir</label>
+                                <input type="number" class="form-input" placeholder="Ex: 1000" id="batAmount" oninput="calculateConversion()">
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Montant XOF équivalent</label>
+                                <input type="text" class="form-input" readonly placeholder="0 XOF" id="xofAmount">
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Mode de retrait</label>
+                            <select class="form-select" id="withdrawalMethod">
+                                <option>Mobile Money (Orange Money)</option>
+                                <option>Mobile Money (MTN Money)</option>
+                                <option>Mobile Money (Moov Money)</option>
+                                <option>Virement bancaire</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Numéro/Compte</label>
+                            <input type="text" class="form-input" placeholder="Ex: +225 XX XX XX XX XX" id="accountNumber">
+                        </div>
+                        <button class="btn btn-success" onclick="convertBAT()">
+                            <span id="convertBtnText">Convertir BAT</span>
+                            <span id="convertLoader" class="loading" style="display: none;"></span>
+                        </button>
+                        <div id="convertSuccess" class="success-message">Conversion initiée ! Vous recevrez vos XOF sous 24h.</div>
+                        <div id="convertError" class="error-message">Erreur lors de la conversion. Veuillez réessayer.</div>
+                    </div>
+
+                    <div class="table-container">
+                        <h3 style="margin-bottom: 1rem;">Historique des Transactions</h3>
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th>Type</th>
+                                    <th>Montant BAT</th>
+                                    <th>Équivalent XOF</th>
+                                    <th>Date</th>
+                                    <th>Statut</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>Gain Parrainage</td>
+                                    <td>+200</td>
+                                    <td>+4,000 XOF</td>
+                                    <td>Aujourd'hui 14:30</td>
+                                    <td><span class="status-badge status-completed">Complété</span></td>
+                                </tr>
+                                <tr>
+                                    <td>Conversion</td>
+                                    <td>-1,000</td>
+                                    <td>20,000 XOF</td>
+                                    <td>Hier 09:15</td>
+                                    <td><span class="status-badge status-pending">En cours</span></td>
+                                </tr>
+                                <tr>
+                                    <td>Gain Vente</td>
+                                    <td>+150</td>
+                                    <td>+3,000 XOF</td>
+                                    <td>2 jours 16:45</td>
+                                    <td><span class="status-badge status-completed">Complété</span></td>
+                                </tr>
+                                <tr>
+                                    <td>Bonus Niveau 2</td>
+                                    <td>+50</td>
+                                    <td>+1,000 XOF</td>
+                                    <td>3 jours 11:20</td>
+                                    <td><span class="status-badge status-completed">Complété</span></td>
+                                </tr>
+                                <tr>
+                                    <td>Gain Parrainage</td>
+                                    <td>+200</td>
+                                    <td>+4,000 XOF</td>
+                                    <td>5 jours 10:30</td>
+                                    <td><span class="status-badge status-completed">Complété</span></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Products Section -->
+                <div id="products" class="content-section">
+                    <h1>🛍️ Mes Produits</h1>
+                    <p style="margin-bottom: 2rem; color: #666;">Gérez vos produits et services en vente</p>
+
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
+                        <div class="stats-grid" style="grid-template-columns: repeat(3, 1fr); flex: 1; margin-right: 2rem;">
+                            <div class="stat-card">
+                                <div class="stat-icon">📦</div>
+                                <div class="stat-number">5</div>
+                                <div class="stat-label">Produits Actifs</div>
+                            </div>
+                            <div class="stat-card">
+                                <div class="stat-icon">💰</div>
+                                <div class="stat-number">12</div>
+                                <div class="stat-label">Ventes ce mois</div>
+                            </div>
+                            <div class="stat-card">
+                                <div class="stat-icon">⭐</div>
+                                <div class="stat-number">4.8</div>
+                                <div class="stat-label">Note Moyenne</div>
+                            </div>
+                        </div>
+                        <button class="btn btn-primary" onclick="showAddProduct()">+ Ajouter Produit</button>
+                    </div>
+
+                    <div class="product-grid">
+                        <div class="product-card">
+                            <div class="product-image">
+                                📱
+                                <div class="product-actions-overlay">
+                                    <button class="action-btn" title="Modifier">✏️</button>
+                                    <button class="action-btn" title="Supprimer" style="color: #ff4757;">🗑️</button>
+                                </div>
+                            </div>
+                            <div class="product-info">
+                                <div class="product-title">Smartphone Galaxy Pro</div>
+                                <div class="product-price">250,000 XOF</div>
+                                <div class="product-stats">
+                                    <span>👁️ 124 vues</span>
+                                    <span>❤️ 23 favoris</span>
+                                </div>
+                                <div class="btn-group" style="display: flex; gap: 0.5rem;">
+                                    <button class="btn btn-primary" style="flex: 1; padding: 8px;">Statistiques</button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="product-card">
+                            <div class="product-image">
+                                👕
+                                <div class="product-actions-overlay">
+                                    <button class="action-btn" title="Modifier">✏️</button>
+                                    <button class="action-btn" title="Supprimer" style="color: #ff4757;">🗑️</button>
+                                </div>
+                            </div>
+                            <div class="product-info">
+                                <div class="product-title">Collection Mode Africaine</div>
+                                <div class="product-price">25,000 XOF</div>
+                                <div class="product-stats">
+                                    <span>👁️ 89 vues</span>
+                                    <span>❤️ 15 favoris</span>
+                                </div>
+                                <div class="btn-group" style="display: flex; gap: 0.5rem;">
+                                    <button class="btn btn-primary" style="flex: 1; padding: 8px;">Statistiques</button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="product-card">
+                            <div class="product-image">
+                                💻
+                                <div class="product-actions-overlay">
+                                    <button class="action-btn" title="Modifier">✏️</button>
+                                    <button class="action-btn" title="Supprimer" style="color: #ff4757;">🗑️</button>
+                                </div>
+                            </div>
+                            <div class="product-info">
+                                <div class="product-title">Formation Marketing Digital</div>
+                                <div class="product-price">75,000 XOF</div>
+                                <div class="product-stats">
+                                    <span>👁️ 67 vues</span>
+                                    <span>❤️ 12 favoris</span>
+                                </div>
+                                <div class="btn-group" style="display: flex; gap: 0.5rem;">
+                                    <button class="btn btn-primary" style="flex: 1; padding: 8px;">Statistiques</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Add Product Form (Hidden by default) -->
+                    <div id="addProductForm" class="form-section" style="display: none;">
+                        <h3>➕ Ajouter un Nouveau Produit</h3>
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                            <div class="form-group">
+                                <label class="form-label">Nom du produit</label>
+                                <input type="text" class="form-input" placeholder="Ex: iPhone 15 Pro Max" id="productName">
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Prix (XOF)</label>
+                                <input type="number" class="form-input" placeholder="Ex: 500000" id="productPrice">
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Catégorie</label>
+                            <select class="form-select" id="productCategory">
+                                <option>Électronique</option>
+                                <option>Mode & Beauté</option>
+                                <option>Maison & Jardin</option>
+                                <option>Sport & Loisirs</option>
+                                <option>Services</option>
+                                <option>Formation</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Description</label>
+                            <textarea class="form-textarea" placeholder="Décrivez votre produit en détail..." id="productDescription"></textarea>
+                        </div>
+                        <div style="display: flex; gap: 1rem;">
+                            <button class="btn btn-primary" onclick="saveProduct()">Enregistrer</button>
+                            <button class="btn" style="background: #ccc;" onclick="hideAddProduct()">Annuler</button>
+                        </div>
+                        <div id="productSuccess" class="success-message">Produit ajouté avec succès !</div>
+                    </div>
+                </div>
+
+                <!-- Orders Section -->
+                <div id="orders" class="content-section">
+                    <h1>📦 Mes Commandes</h1>
+                    <p style="margin-bottom: 2rem; color: #666;">Suivez vos achats et leur statut de livraison</p>
+
+                    <div class="table-container">
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th>Commande #</th>
+                                    <th>Produits</th>
+                                    <th>Vendeur</th>
+                                    <th>Total</th>
+                                    <th>Date</th>
+                                    <th>Statut</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td><strong>#BAT001</strong></td>
+                                    <td>
+                                        <div>Casque Audio Premium</div>
+                                        <small style="color: #666;">Quantité: 1</small>
+                                    </td>
+                                    <td>TechStore Pro</td>
+                                    <td>45,000 XOF</td>
+                                    <td>Aujourd'hui</td>
+                                    <td><span class="status-badge status-pending">En préparation</span></td>
+                                    <td>
+                                        <button class="btn btn-primary" style="padding: 5px 10px; font-size: 0.8rem;">Suivre</button>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td><strong>#BAT002</strong></td>
+                                    <td>
+                                        <div>Formation Marketing</div>
+                                        <small style="color: #666;">Accès en ligne</small>
+                                    </td>
+                                    <td>EduMarket</td>
+                                    <td>75,000 XOF</td>
+                                    <td>Hier</td>
+                                    <td><span class="status-badge status-active">Accès accordé</span></td>
+                                    <td>
+                                        <button class="btn btn-success" style="padding: 5px 10px; font-size: 0.8rem;">Accéder</button>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td><strong>#BAT003</strong></td>
+                                    <td>
+                                        <div>T-shirt Africain</div>
+                                        <small style="color: #666;">Taille: L</small>
+                                    </td>
+                                    <td>AfriMode</td>
+                                    <td>25,000 XOF</td>
+                                    <td>3 jours</td>
+                                    <td><span class="status-badge status-completed">Livré</span></td>
+                                    <td>
+                                        <button class="btn btn-primary" style="padding: 5px 10px; font-size: 0.8rem;">Noter</button>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Sales Section -->
+                <div id="sales" class="content-section">
+                    <h1>💰 Mes Ventes</h1>
+                    <p style="margin-bottom: 2rem; color: #666;">Gérez vos ventes et suivez vos revenus</p>
+
+                    <div class="stats-grid">
+                        <div class="stat-card">
+                            <div class="stat-icon">📈</div>
+                            <div class="stat-number">12</div>
+                            <div class="stat-label">Ventes ce mois</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-icon">💵</div>
+                            <div class="stat-number">485,000</div>
+                            <div class="stat-label">Revenus XOF</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-icon">🦇</div>
+                            <div class="stat-number">485</div>
+                            <div class="stat-label">BAT Gagnés</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-icon">⭐</div>
+                            <div class="stat-number">4.8</div>
+                            <div class="stat-label">Note Vendeur</div>
+                        </div>
+                    </div>
+
+                    <div class="table-container">
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th>Vente #</th>
+                                    <th>Produit</th>
+                                    <th>Acheteur</th>
+                                    <th>Prix</th>
+                                    <th>BAT Gagnés</th>
+                                    <th>Date</th>
+                                    <th>Statut</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td><strong>#V001</strong></td>
+                                    <td>Smartphone Galaxy</td>
+                                    <td>Marie K.</td>
+                                    <td>250,000 XOF</td>
+                                    <td>+250 BAT</td>
+                                    <td>Aujourd'hui</td>
+                                    <td><span class="status-badge status-completed">Complétée</span></td>
+                                </tr>
+                                <tr>
+                                    <td><strong>#V002</strong></td>
+                                    <td>Formation Marketing</td>
+                                    <td>Paul M.</td>
+                                    <td>75,000 XOF</td>
+                                    <td>+75 BAT</td>
+                                    <td>Hier</td>
+                                    <td><span class="status-badge status-completed">Complétée</span></td>
+                                </tr>
+                                <tr>
+                                    <td><strong>#V003</strong></td>
+                                    <td>T-shirt Designer</td>
+                                    <td>Sophie L.</td>
+                                    <td>25,000 XOF</td>
+                                    <td>+25 BAT</td>
+                                    <td>2 jours</td>
+                                    <td><span class="status-badge status-pending">En cours</span></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Profile Section -->
+                <div id="profile" class="content-section">
+                    <h1>👤 Mon Profil</h1>
+                    <p style="margin-bottom: 2rem; color: #666;">Gérez vos informations personnelles</p>
+
+                    <div class="form-section">
+                        <h3>Informations Personnelles</h3>
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                            <div class="form-group">
+                                <label class="form-label">Prénom</label>
+                                <input type="text" class="form-input" value="John" id="firstName">
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Nom</label>
+                                <input type="text" class="form-input" value="Doe" id="lastName">
+                            </div>
+                        </div>
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                            <div class="form-group">
+                                <label class="form-label">Email</label>
+                                <input type="email" class="form-input" value="john.doe@email.com" id="email">
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Téléphone</label>
+                                <input type="tel" class="form-input" value="+225 XX XX XX XX XX" id="phone">
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Adresse</label>
+                            <textarea class="form-textarea" id="address">Abidjan, Cocody - Riviera Golf</textarea>
+                        </div>
+                        <button class="btn btn-primary" onclick="updateProfile()">Mettre à jour</button>
+                        <div id="profileSuccess" class="success-message">Profil mis à jour avec succès !</div>
+                    </div>
+
+                    <div class="form-section">
+                        <h3>🔐 Sécurité</h3>
+                        <div class="form-group">
+                            <label class="form-label">Mot de passe actuel</label>
+                            <input type="password" class="form-input" id="currentPassword">
+                        </div>
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                            <div class="form-group">
+                                <label class="form-label">Nouveau mot de passe</label>
+                                <input type="password" class="form-input" id="newPassword">
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Confirmer le mot de passe</label>
+                                <input type="password" class="form-input" id="confirmPassword">
+                            </div>
+                        </div>
+                        <button class="btn btn-primary" onclick="changePassword()">Changer le mot de passe</button>
+                        <div id="passwordSuccess" class="success-message">Mot de passe modifié avec succès !</div>
+                        <div id="passwordError" class="error-message">Les mots de passe ne correspondent pas.</div>
+                    </div>
+
+                    <div class="form-section">
+                        <h3>💳 Informations Bancaires</h3>
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                            <div class="form-group">
+                                <label class="form-label">Méthode de paiement préférée</label>
+                                <select class="form-select" id="preferredPayment">
+                                    <option>Orange Money</option>
+                                    <option>MTN Money</option>
+                                    <option>Moov Money</option>
+                                    <option>Virement bancaire</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Numéro/Compte</label>
+                                <input type="text" class="form-input" value="+225 XX XX XX XX XX" id="paymentAccount">
+                            </div>
+                        </div>
+                        <button class="btn btn-primary" onclick="updatePaymentInfo()">Mettre à jour</button>
+                        <div id="paymentSuccess" class="success-message">Informations de paiement mises à jour !</div>
+                    </div>
+                </div>
+
+                <!-- Notifications Section -->
+                <div id="notifications" class="content-section">
+                    <h1>🔔 Notifications</h1>
+                    <p style="margin-bottom: 2rem; color: #666;">Restez informé de toute l'activité sur votre compte</p>
+
+                    <div class="form-section" style="background: white; padding: 1rem; margin-bottom: 2rem;">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                            <h3>Paramètres de Notification</h3>
+                            <button class="btn btn-primary" onclick="saveNotificationSettings()">Sauvegarder</button>
+                        </div>
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem;">
+                            <div>
+                                <h4 style="margin-bottom: 1rem;">Notifications par Email</h4>
+                                <label style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.5rem;">
+                                    <input type="checkbox" checked id="emailReferrals"> Nouveaux parrainages
+                                </label>
+                                <label style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.5rem;">
+                                    <input type="checkbox" checked id="emailSales"> Nouvelles ventes
+                                </label>
+                                <label style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.5rem;">
+                                    <input type="checkbox" checked id="emailOrders"> Commandes et livraisons
+                                </label>
+                                <label style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.5rem;">
+                                    <input type="checkbox" id="emailPromos"> Promotions et offres
+                                </label>
+                            </div>
+                            <div>
+                                <h4 style="margin-bottom: 1rem;">Notifications Push</h4>
+                                <label style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.5rem;">
+                                    <input type="checkbox" checked id="pushReferrals"> Nouveaux parrainages
+                                </label>
+                                <label style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.5rem;">
+                                    <input type="checkbox" checked id="pushSales"> Nouvelles ventes
+                                </label>
+                                <label style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.5rem;">
+                                    <input type="checkbox" id="pushOrders"> Commandes et livraisons
+                                </label>
+                                <label style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.5rem;">
+                                    <input type="checkbox" id="pushPromos"> Promotions et offres
+                                </label>
+                            </div>
+                        </div>
+                        <div id="notificationSuccess" class="success-message">Paramètres sauvegardés !</div>
+                    </div>
+
+                    <div style="max-height: 600px; overflow-y: auto;">
+                        <h3 style="margin-bottom: 1rem;">Notifications Récentes</h3>
+                        
+                        <div class="notification-item">
+                            <div class="notification-header">
+                                <div class="notification-title">🎉 Nouveau parrainage réussi !</div>
+                                <div class="notification-time">Il y a 2 heures</div>
+                            </div>
+                            <div class="notification-content">
+                                Marie Koné s'est inscrite grâce à votre code de parrainage. Vous avez gagné 200 BAT !
+                            </div>
+                        </div>
+
+                        <div class="notification-item">
+                            <div class="notification-header">
+                                <div class="notification-title">💰 Vente confirmée</div>
+                                <div class="notification-time">Il y a 5 heures</div>
+                            </div>
+                            <div class="notification-content">
+                                Votre "Smartphone Galaxy Pro" a été vendu pour 250,000 XOF. +250 BAT ajoutés à votre portefeuille.
+                            </div>
+                        </div>
+
+                        <div class="notification-item">
+                            <div class="notification-header">
+                                <div class="notification-title">🦇 Conversion BAT réussie</div>
+                                <div class="notification-time">Hier</div>
+                            </div>
+                            <div class="notification-content">
+                                Votre conversion de 1,000 BAT en 20,000 XOF a été traitée. Les fonds ont été transférés sur votre Orange Money.
+                            </div>
+                        </div>
+
+                        <div class="notification-item">
+                            <div class="notification-header">
+                                <div class="notification-title">📦 Commande expédiée</div>
+                                <div class="notification-time">Il y a 2 jours</div>
+                            </div>
+                            <div class="notification-content">
+                                Votre commande #BAT003 (T-shirt Africain) a été expédiée. Numéro de suivi: BM2024001234
+                            </div>
+                        </div>
+
+                        <div class="notification-item">
+                            <div class="notification-header">
+                                <div class="notification-title">🌟 Nouveau niveau atteint !</div>
+                                <div class="notification-time">Il y a 3 jours</div>
+                            </div>
+                            <div class="notification-content">
+                                Félicitations ! Vous avez atteint le niveau "Parrain Expert" avec 10+ filleuls. Bonus: +100 BAT
+                            </div>
+                        </div>
+
+                        <div class="notification-item">
+                            <div class="notification-header">
+                                <div class="notification-title">👥 Filleul de niveau 2</div>
+                                <div class="notification-time">Il y a 5 jours</div>
+                            </div>
+                            <div class="notification-content">
+                                Lisa T. (filleul de Marie K.) a effectué sa première vente. Vous gagnez un bonus de 50 BAT !
+                            </div>
+                        </div>
+
+                        <div class="notification-item">
+                            <div class="notification-header">
+                                <div class="notification-title">🎯 Objectif atteint</div>
+                                <div class="notification-time">Il y a 1 semaine</div>
+                            </div>
+                            <div class="notification-content">
+                                Vous avez atteint votre objectif mensuel de 5 ventes. Bonus: +200 BAT ajoutés à votre compte !
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let currentSection = 'dashboard';
+        let conversionRate = 20; // 1 BAT = 20 XOF
+        let userBAT = 2450;
+
+        // Navigation
+        function showSection(sectionName) {
+            // Hide all sections
+            const sections = document.querySelectorAll('.content-section');
+            sections.forEach(section => {
+                section.classList.remove('active');
+            });
+
+            // Remove active class from all nav items
+            const navItems = document.querySelectorAll('.nav-item');
+            navItems.forEach(item => {
+                item.classList.remove('active');
+            });
+
+            // Show selected section
+            document.getElementById(sectionName).classList.add('active');
+            
+            // Add active class to clicked nav item
+            event.target.classList.add('active');
+            
+            currentSection = sectionName;
+
+            // Update page title
+            document.title = `BatMarket - ${getSectionTitle(sectionName)}`;
+        }
+
+        function getSectionTitle(section) {
+            const titles = {
+                'dashboard': 'Dashboard',
+                'referrals': 'Mes Parrainages',
+                'bat-wallet': 'Portefeuille BAT',
+                'products': 'Mes Produits',
+                'orders': 'Commandes',
+                'sales': 'Ventes',
+                'profile': 'Mon Profil',
+                'notifications': 'Notifications'
+            };
+            return titles[section] || 'Dashboard';
+        }
+
+        // BAT Conversion
+        function calculateConversion() {
+            const batInput = document.getElementById('batAmount');
+            const xofInput = document.getElementById('xofAmount');
+            
+            const batAmount = parseFloat(batInput.value) || 0;
+            const xofAmount = batAmount * conversionRate;
+            
+            xofInput.value = xofAmount.toLocaleString() + ' XOF';
+        }
+
+        function convertBAT() {
+            const batAmount = parseFloat(document.getElementById('batAmount').value);
+            const withdrawalMethod = document.getElementById('withdrawalMethod').value;
+            const accountNumber = document.getElementById('accountNumber').value;
+
+            if (!batAmount || batAmount <= 0) {
+                showError('convertError', 'Veuillez entrer un montant BAT valide');
+                return;
+            }
+
+            if (batAmount > userBAT) {
+                showError('convertError', 'Solde BAT insuffisant');
+                return;
+            }
+
+            if (!accountNumber.trim()) {
+                showError('convertError', 'Veuillez entrer votre numéro/compte');
+                return;
+            }
+
+            // Show loading
+            const btn = document.getElementById('convertBtnText');
+            const loader = document.getElementById('convertLoader');
+            btn.style.display = 'none';
+            loader.style.display = 'inline-block';
+
+            // Simulate API call
+            setTimeout(() => {
+                // Hide loading
+                btn.style.display = 'inline';
+                loader.style.display = 'none';
+
+                // Update balance
+                userBAT -= batAmount;
+                updateBATDisplay();
+
+                // Show success
+                showSuccess('convertSuccess', 'Conversion initiée ! Vous recevrez vos XOF sous 24h.');
+                
+                // Clear form
+                document.getElementById('batAmount').value = '';
+                document.getElementById('xofAmount').value = '';
+                document.getElementById('accountNumber').value = '';
+            }, 2000);
+        }
+
+        // Referral functions
+        function copyReferralCode() {
+            const code = document.getElementById('referralCode').textContent;
+            navigator.clipboard.writeText(code).then(() => {
+                const btn = event.target;
+                const originalText = btn.textContent;
+                btn.textContent = '✅';
+                setTimeout(() => {
+                    btn.textContent = originalText;
+                }, 1500);
+            });
+        }
+
+        function sendInvitations() {
+            const emails = document.getElementById('inviteEmails').value.trim();
+            const message = document.getElementById('inviteMessage').value.trim();
+
+            if (!emails) {
+                alert('Veuillez entrer au moins une adresse email');
+                return;
+            }
+
+            const emailList = emails.split(',').map(email => email.trim()).filter(email => email);
+            
+            if (emailList.length === 0) {
+                alert('Veuillez entrer des adresses email valides');
+                return;
+            }
+
+            // Simulate sending invitations
+            setTimeout(() => {
+                showSuccess('inviteSuccess', `${emailList.length} invitation(s) envoyée(s) avec succès !`);
+                document.getElementById('inviteEmails').value = '';
+                document.getElementById('inviteMessage').value = '';
+            }, 1000);
+        }
+
+        function showUserDetails(userId) {
+            const users = {
+                'marie': 'Marie Koné - Inscrite le 15 Mars 2024\n3 filleuls actifs\nDernière activité: Aujourd\'hui',
+                'paul': 'Paul Martin - Inscrit le 8 Mars 2024\n2 filleuls actifs\nDernière activité: Hier',
+                'sophie': 'Sophie Laurent - Inscrite le 22 Mars 2024\n1 filleul actif\nDernière activité: Il y a 3 jours',
+                'ahmed': 'Ahmed Bamba - Inscrit le 25 Mars 2024\nAucun filleul pour le moment\nDernière activité: Il y a 1 heure'
+            };
+            
+            alert(users[userId] || 'Détails non disponibles');
+        }
+
+        // Product management
+        function showAddProduct() {
+            document.getElementById('addProductForm').style.display = 'block';
+            document.getElementById('addProductForm').scrollIntoView({ behavior: 'smooth' });
+        }
+
+        function hideAddProduct() {
+            document.getElementById('addProductForm').style.display = 'none';
+        }
+
+        function saveProduct() {
+            const name = document.getElementById('productName').value.trim();
+            const price = document.getElementById('productPrice').value.trim();
+            const category = document.getElementById('productCategory').value;
+            const description = document.getElementById('productDescription').value.trim();
+
+            if (!name || !price || !description) {
+                alert('Veuillez remplir tous les champs obligatoires');
+                return;
+            }
+
+            // Simulate saving product
+            setTimeout(() => {
+                showSuccess('productSuccess', 'Produit ajouté avec succès !');
+                
+                // Clear form
+                document.getElementById('productName').value = '';
+                document.getElementById('productPrice').value = '';
+                document.getElementById('productDescription').value = '';
+                
+                // Hide form after success
+                setTimeout(() => {
+                    hideAddProduct();
+                }, 2000);
+            }, 1000);
+        }
+
+        // Profile management
+        function updateProfile() {
+            const firstName = document.getElementById('firstName').value.trim();
+            const lastName = document.getElementById('lastName').value.trim();
+            const email = document.getElementById('email').value.trim();
+            const phone = document.getElementById('phone').value.trim();
+
+            if (!firstName || !lastName || !email) {
+                alert('Veuillez remplir tous les champs obligatoires');
+                return;
+            }
+
+            // Simulate profile update
+            setTimeout(() => {
+                showSuccess('profileSuccess', 'Profil mis à jour avec succès !');
+            }, 1000);
+        }
+
+        function changePassword() {
+            const current = document.getElementById('currentPassword').value;
+            const newPass = document.getElementById('newPassword').value;
+            const confirm = document.getElementById('confirmPassword').value;
+
+            if (!current || !newPass || !confirm) {
+                showError('passwordError', 'Veuillez remplir tous les champs');
+                return;
+            }
+
+            if (newPass !== confirm) {
+                showError('passwordError', 'Les mots de passe ne correspondent pas');
+                return;
+            }
+
+            if (newPass.length < 6) {
+                showError('passwordError', 'Le mot de passe doit contenir au moins 6 caractères');
+                return;
+            }
+
+            // Simulate password change
+            setTimeout(() => {
+                showSuccess('passwordSuccess', 'Mot de passe modifié avec succès !');
+                
+                // Clear form
+                document.getElementById('currentPassword').value = '';
+                document.getElementById('newPassword').value = '';
+                document.getElementById('confirmPassword').value = '';
+            }, 1000);
+        }
+
+        function updatePaymentInfo() {
+            const method = document.getElementById('preferredPayment').value;
+            const account = document.getElementById('paymentAccount').value.trim();
+
+            if (!account) {
+                alert('Veuillez entrer votre numéro/compte');
+                return;
+            }
+
+            // Simulate update
+            setTimeout(() => {
+                showSuccess('paymentSuccess', 'Informations de paiement mises à jour !');
+            }, 1000);
+        }
+
+        // Notification management
+        function saveNotificationSettings() {
+            // Simulate saving settings
+            setTimeout(() => {
+                showSuccess('notificationSuccess', 'Paramètres sauvegardés !');
+            }, 1000);
+        }
+
+        // Utility functions
+        function showSuccess(elementId, message) {
+            const element = document.getElementById(elementId);
+            element.textContent = message;
+            element.style.display = 'block';
+            setTimeout(() => {
+                element.style.display = 'none';
+            }, 3000);
+        }
+
+        function showError(elementId, message) {
+            const element = document.getElementById(elementId);
+            element.textContent = message;
+            element.style.display = 'block';
+            setTimeout(() => {
+                element.style.display = 'none';
+            }, 3000);
+        }
+
+        function updateBATDisplay() {
+            const batElements = document.querySelectorAll('#batBalance');
+            batElements.forEach(element => {
+                element.textContent = userBAT.toLocaleString();
+            });
+        }
+
+        function logout() {
+            if (confirm('Êtes-vous sûr de vouloir vous déconnecter ?')) {
+                alert('Déconnexion réussie ! Redirection vers la page d\'accueil...');
+                // In a real app, this would redirect to the login page
+                window.location.href = '/';
+            }
+        }
+
+        // Real-time updates simulation
+        function simulateRealTimeUpdates() {
+            setInterval(() => {
+                // Randomly update some stats
+                if (Math.random() > 0.95) { // 5% chance
+                    const referralCount = document.getElementById('referralCount');
+                    if (referralCount) {
+                        const current = parseInt(referralCount.textContent);
+                        referralCount.textContent = current + 1;
+                        
+                        // Add some BAT for the new referral
+                        userBAT += 200;
+                        updateBATDisplay();
+                        
+                        // Show notification (could add to notification list dynamically)
+                        console.log('Nouveau parrainage ! +200 BAT');
+                    }
+                }
+            }, 30000); // Check every 30 seconds
+        }
+
+        // Initialize when DOM is loaded
+        document.addEventListener('DOMContentLoaded', function() {
+            // Set up BAT amount input listener
+            const batInput = document.getElementById('batAmount');
+            if (batInput) {
+                batInput.addEventListener('input', calculateConversion);
+            }
+
+            // Start real-time updates
+            simulateRealTimeUpdates();
+
+            // Add smooth scrolling for navigation
+            const navItems = document.querySelectorAll('.nav-item');
+            navItems.forEach(item => {
+                item.addEventListener('click', function() {
+                    // Smooth scroll to top of main content
+                    document.querySelector('.main-content').scrollTop = 0;
+                });
+            });
+
+            console.log('🦇 BatMarket User Dashboard loaded successfully!');
+        });
+
+        // Handle responsive navigation on mobile
+        window.addEventListener('resize', function() {
+            if (window.innerWidth <= 768) {
+                const dashboard = document.querySelector('.dashboard-grid');
+                dashboard.style.gridTemplateColumns = '1fr';
+            } else {
+                const dashboard = document.querySelector('.dashboard-grid');
+                dashboard.style.gridTemplateColumns = '250px 1fr';
+            }
+        });
+    </script>
+</body>
+</html>
